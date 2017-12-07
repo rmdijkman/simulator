@@ -1,59 +1,58 @@
 package nl.tue.simulator_engine.core;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import desmoj.core.report.Message;
-import desmoj.core.report.MessageReceiver;
-import desmoj.core.report.Reporter;
 import desmoj.core.simulator.Experiment;
 import desmoj.core.simulator.TimeInstant;
 import nl.tue.bpmn.concepts.BPMNModel;
 import nl.tue.bpmn.parser.BPMNParseException;
 import nl.tue.bpmn.parser.BPMNParser;
+import nl.tue.util.Util;
 
+public class Simulator {
 
-public class Simulator implements MessageReceiver {
-
-	int nrMessages = 0;
-	boolean hasErrors = false;
-	static int nrrep = 10;
-	static double za2 = 1.96;
-	
-	static BPMNModel model;
-	static SimulatorModel simmodel;
-	static Experiment experiment;
-	static Simulator dataCollector;
-	static int duration;
-
-	public static String runSimulator() throws BPMNParseException {
+	public static String runSimulator(String filePath, long duration, int nrReplications) throws BPMNParseException {
 		BPMNParser parser = new BPMNParser();
-		parser.parse("./resources/tests/Correct.bpmn");
-		model = parser.getParsedModel();
-		//model.actDepBySet();
-		
-		for (int a = 0; a < nrrep; a++) {
-			simmodel = new SimulatorModel(null, "", true, true, model);
-			dataCollector = new Simulator();
-			experiment = new Experiment("Experiment", TimeUnit.SECONDS, TimeUnit.MINUTES, null);
+		parser.parse(filePath);
+		BPMNModel model = parser.getParsedModel();
+
+		String result = "";
+
+		for (int a = 0; a < nrReplications; a++) {
+			SimulatorModel simmodel = new SimulatorModel(null, "", true, true, model);
+
+			Experiment experiment = new Experiment("Experiment", TimeUnit.SECONDS, TimeUnit.MINUTES, null);
+			experiment.setSeedGenerator(System.currentTimeMillis());
 			simmodel.connectToExperiment(experiment);
-			duration = 1440;
 
 			experiment.setShowProgressBar(false);
 			experiment.stop(new TimeInstant(duration, TimeUnit.MINUTES));
-			
+			experiment.setSilent(true);
+
 			experiment.start();
 			experiment.report();
 			experiment.finish();
 
-		}
-		//TODO Fix Return
-		return "TODO";
-	}
-		@Override
-		public void receive(Message m) {
-			nrMessages ++;
-		}
+			double meanSojournTime = simmodel.meanSojournTime();
+			double meanProcessingTime = simmodel.meanProcessingTime();
+			result += "Mean sojourn time: " + Util.round(meanSojournTime,2) + "\n"; 
+			result += "Mean processing time: " + Util.round(meanProcessingTime,2) + "\n"; 
+			result += "Mean waiting time: " + Util.round(meanSojournTime - meanProcessingTime,2) + "\n";
 
-		@Override
-		public void receive(Reporter r) {
-		}
+			Map<String, Double> meanActivityWaitingTimes = simmodel.meanActivityWaitingTimes(); 
+			for (Map.Entry<String, Double> mapt: simmodel.meanActivityProcessingTimes().entrySet()){
+				result += "Activity '" + mapt.getKey() + "' processing time " + Util.round(mapt.getValue(),2) + ", waiting time " + Util.round(meanActivityWaitingTimes.get(mapt.getKey()),2) + "\n";  
+			}
+
+			Map<String, Double> meanResourceTypeIdleTimes = simmodel.meanResourceTypeIdleTimes(); 
+			for (Map.Entry<String, Double> mrtit: simmodel.meanResourceTypeProcessingTimes().entrySet()){
+				double idleTime = meanResourceTypeIdleTimes.get(mrtit.getKey());
+				double processingTime = mrtit.getValue();
+				result += "Resource type '" + mrtit.getKey() + "' utilization rate " + Util.round(processingTime/(processingTime+idleTime),2) + "\n";  
+			}
+		}		
+
+		return result;
+	}
+
 }

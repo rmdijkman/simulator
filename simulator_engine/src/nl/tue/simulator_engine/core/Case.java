@@ -8,7 +8,6 @@ import java.util.Set;
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
 import desmoj.core.simulator.SimProcess;
-import desmoj.core.simulator.TimeInstant;
 import nl.tue.bpmn.concepts.Type;
 import nl.tue.bpmn.concepts.TypeGtw;
 import nl.tue.bpmn.concepts.Arc;
@@ -21,17 +20,25 @@ import nl.tue.bpmn.concepts.BPMNModel;
 public class Case extends SimProcess{
 	static int  identifier = 0;
 	int myIdentifier;
-	BPMNModel model = Simulator.model;
-	SimulatorModel simmodel = Simulator.simmodel;
+	BPMNModel model;
+	SimulatorModel simmodel;
 	Map<Node, Resource> history;
+	
+	double startTime;
+	double totalProcessingTime;
 	
 	public Case(Model owner, String name, boolean showInTrace){
 		super(owner, name, showInTrace);
+		simmodel = (SimulatorModel) owner;
 		myIdentifier = identifier++;
 		history = new HashMap<Node,Resource>();
+		model = simmodel.getBBPMNModel();
 	}
 	
-	public void lifeCycle(){		
+	public void lifeCycle(){
+		startTime = simmodel.presentTime().getTimeAsDouble();
+		totalProcessingTime = 0;
+		
 		//Instantiate the case properties
 		ConditionEvaluator ce = simmodel.instantiateCase();
 				
@@ -129,6 +136,10 @@ public class Case extends SimProcess{
 				}
 			}
 		}
+		
+		double sojournTime = simmodel.presentTime().getTimeAsDouble() - startTime;
+		simmodel.addSojournTime(sojournTime);
+		simmodel.addProcessingTime(totalProcessingTime);
 	}
 	
 	/**
@@ -195,4 +206,7 @@ public class Case extends SimProcess{
 		history.put(n, r);
 	}
 	
+	public void addProcessingTime(double processingTime){
+		totalProcessingTime += processingTime;
+	}
 }

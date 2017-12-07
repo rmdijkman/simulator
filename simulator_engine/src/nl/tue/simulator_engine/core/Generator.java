@@ -5,14 +5,15 @@ import desmoj.core.simulator.SimProcess;
 import desmoj.core.simulator.TimeSpan;
 
 public class Generator extends SimProcess{
+
+	SimulatorModel model;
 	
 	public Generator(Model owner, String name, boolean showInTrace){
 		super(owner, name, showInTrace);
+		model = (SimulatorModel) owner;
 	}
 	
 	public void lifeCycle(){
-		
-		SimulatorModel model = Simulator.simmodel;
 		
 		while(true){
 			Case cs = new Case(model, "Case", true);

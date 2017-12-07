@@ -1,7 +1,10 @@
 package nl.tue.simulator_engine.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
@@ -10,10 +13,10 @@ import desmoj.core.simulator.TimeSpan;
 import nl.tue.bpmn.concepts.BPMNModel;
 import nl.tue.bpmn.concepts.Node;
 import nl.tue.bpmn.concepts.ResourceType;
-import nl.tue.bpmn.concepts.Role;
 import nl.tue.bpmn.concepts.Type;
 import nl.tue.bpmn.parser.ConditionEvaluator;
 import nl.tue.bpmn.parser.DistributionEvaluator;
+import nl.tue.util.Tuple;
 
 /**
  * A simulator model for a BPMN model, consisting of:
@@ -47,6 +50,13 @@ public class SimulatorModel extends Model{
 	//The BPMN model for which to create the simulation model
 	private BPMNModel bpmn;
 	
+	//The fields that store the result data
+	List<Double> sojournTimes;
+	List<Double> processingTimes;
+	List<Tuple<String, Double>> activityProcessingTimes;
+	Map<String, Double> resourceTypeProcessingTime;
+	Map<String, Double> resourceTypeIdleTime;
+	
 	private static DistributionEvaluator distributionEvaluator = new DistributionEvaluator();	
 	
 	/**
@@ -67,6 +77,12 @@ public class SimulatorModel extends Model{
 		processingTimeForActivity = new HashMap<ProcessQueue<Case>,String>();
 		
 		this.bpmn = bpmn;
+		
+		sojournTimes = new ArrayList<Double>();
+		processingTimes = new ArrayList<Double>();
+		activityProcessingTimes = new ArrayList<Tuple<String, Double>>();
+		resourceTypeProcessingTime = new HashMap<String, Double>();
+		resourceTypeIdleTime = new HashMap<String, Double>();
 	}
 	
 	/**
@@ -256,5 +272,137 @@ public class SimulatorModel extends Model{
 		}
 		//Set the information attribute schema
 		setInformationAttributes(bpmn.getInformationAttributes());
+	}
+	
+	public Map<String,ProcessQueue<Case>> getActivityQueueByName(){
+		return this.activityQueuesByName;
+	}
+	
+	public Map<String,ProcessQueue<Resource>> getResourceQueueByName(){
+		return this.resourceQueuesByName;
+	}
+	
+	public BPMNModel getBBPMNModel(){
+		return bpmn;
+	}
+	
+	public void addSojournTime(Double sojournTime){
+		sojournTimes.add(sojournTime);
+	}
+	
+	public void addActivityProcessingTime(String activity, Double processingTime){
+		activityProcessingTimes.add(new Tuple<String,Double>(activity, processingTime));
+	}
+	
+	public void addResourceTypeProcessingTime(String resourceType, Double processingTime){
+		Double totalTime = resourceTypeProcessingTime.get(resourceType);
+		if (totalTime == null){
+			resourceTypeProcessingTime.put(resourceType, processingTime);
+		}else{
+			resourceTypeProcessingTime.put(resourceType, totalTime + processingTime);			
+		}
+	}
+
+	public void addResourceTypeIdleTime(String resourceType, Double idleTime){
+		Double totalTime = resourceTypeIdleTime.get(resourceType);
+		if (totalTime == null){
+			resourceTypeIdleTime.put(resourceType, idleTime);
+		}else{
+			resourceTypeIdleTime.put(resourceType, totalTime + idleTime);			
+		}
+	}
+
+	public void addProcessingTime(double processingTime) {
+		processingTimes.add(processingTime);
+	}
+	
+	public double meanSojournTime(){
+		double result = 0;
+		for (double v: sojournTimes){
+			result += v;
+		}
+		return result/(double)sojournTimes.size();
+	}
+
+	public double meanProcessingTime(){
+		double result = 0;
+		for (double v: processingTimes){
+			result += v;
+		}
+		return result/(double)processingTimes.size();
+	}
+	
+	public Map<String,Double> meanActivityProcessingTimes(){
+		Map<String,Double> total = new HashMap<String,Double>();
+		Map<String,Double> count = new HashMap<String,Double>();
+		for (Tuple<String,Double> v: activityProcessingTimes){
+			Double t = total.get(v.e1);
+			Double c = count.get(v.e1);
+			if (t == null){
+				t = 0.0;
+				c = 0.0;
+			}
+			total.put(v.e1, t + v.e2);
+			c += 1;
+			count.put(v.e1, c);
+		}
+		Map<String,Double> result = new HashMap<String,Double>();
+		for (Entry<String,Double> t: total.entrySet()){
+			result.put(t.getKey(), t.getValue()/count.get(t.getKey()));
+		}
+		return result;
+	}
+	
+	public Map<String,Double> meanActivityWaitingTimes(){
+		Map<String,Double> result = new HashMap<String,Double>();		
+		for (Node n: bpmn.getNodes()){
+			ProcessQueue<Case> q = activityQueuesByName.get(n.getName());
+			if (q != null){
+				result.put(n.getName(), q.averageWaitTime().getTimeAsDouble());
+			}
+		}
+		return result;		
+	}
+
+	public Map<String,Double> meanResourceTypeProcessingTimes(){
+		Map<String,Double> total = new HashMap<String,Double>();
+		Map<String,Double> count = new HashMap<String,Double>();
+		for (Entry<String,Double> v: resourceTypeProcessingTime.entrySet()){
+			Double t = total.get(v.getKey());
+			Double c = count.get(v.getKey());
+			if (t == null){
+				t = 0.0;
+				c = 0.0;
+			}
+			total.put(v.getKey(), t + v.getValue());
+			c += 1;
+			count.put(v.getKey(), c);
+		}
+		Map<String,Double> result = new HashMap<String,Double>();
+		for (Entry<String,Double> t: total.entrySet()){
+			result.put(t.getKey(), t.getValue()/count.get(t.getKey()));
+		}
+		return result;
+	}
+
+	public Map<String,Double> meanResourceTypeIdleTimes(){
+		Map<String,Double> total = new HashMap<String,Double>();
+		Map<String,Double> count = new HashMap<String,Double>();
+		for (Entry<String,Double> v: resourceTypeIdleTime.entrySet()){
+			Double t = total.get(v.getKey());
+			Double c = count.get(v.getKey());
+			if (t == null){
+				t = 0.0;
+				c = 0.0;
+			}
+			total.put(v.getKey(), t + v.getValue());
+			c += 1;
+			count.put(v.getKey(), c);
+		}
+		Map<String,Double> result = new HashMap<String,Double>();
+		for (Entry<String,Double> t: total.entrySet()){
+			result.put(t.getKey(), t.getValue()/count.get(t.getKey()));
+		}
+		return result;
 	}
 }

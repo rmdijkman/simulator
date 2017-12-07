@@ -1,11 +1,8 @@
 package nl.tue.simulator_engine.core;
 
-import java.util.concurrent.TimeUnit;
-
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
 import desmoj.core.simulator.SimProcess;
-import desmoj.core.simulator.TimeInstant;
 import desmoj.core.simulator.TimeSpan;
 import nl.tue.bpmn.concepts.Arc;
 import nl.tue.bpmn.concepts.BPMNModel;
@@ -18,17 +15,18 @@ public class Resource extends SimProcess{
 	static int identifier = 0;
 	int myIdentifier;
 	ResourceType myType;
-	BPMNModel model = Simulator.model;
-	SimulatorModel simmodel = Simulator.simmodel;
+	BPMNModel model;
+	SimulatorModel simmodel;
+	double previousCompletionTime;
 		
 	public Resource(Model owner, String name, boolean showInTrace, ResourceType type){
 		super(owner, name, showInTrace);
 		myIdentifier = identifier++;
 		myType = type;
+		simmodel = (SimulatorModel) owner;
+		model = simmodel.getBBPMNModel();
+		previousCompletionTime = 0;
 	}
-	
-	
-	
 	
 	public void lifeCycle() {
 		ProcessQueue<Resource> myQueue = simmodel.queueForResourceType(myType.getName());
@@ -69,8 +67,17 @@ public class Resource extends SimProcess{
 	
 	public void ResourceAllocation(Node n, ProcessQueue<Case> pc){
 		Case ac = pc.removeFirst();
-		TimeSpan pt = new TimeSpan(simmodel.processingTimeSampleFor(pc));
+		TimeSpan pt = new TimeSpan(simmodel.processingTimeSampleFor(pc));		
+		double activityStartTime = simmodel.presentTime().getTimeAsDouble();
+		double idleTime = activityStartTime - previousCompletionTime;
+		simmodel.addResourceTypeIdleTime(myType.getName(), idleTime);
 		hold(pt);
+		double activityCompletionTime = simmodel.presentTime().getTimeAsDouble();
+		double activityProcessingTime = activityCompletionTime - activityStartTime;
+		ac.addProcessingTime(activityProcessingTime);
+		simmodel.addActivityProcessingTime(n.getName(), activityProcessingTime);
+		simmodel.addResourceTypeProcessingTime(myType.getName(), activityProcessingTime);
+		previousCompletionTime = activityCompletionTime;
 		for(Arc i : n.getIncoming()){
 			i.setEnable(false);
 		}
