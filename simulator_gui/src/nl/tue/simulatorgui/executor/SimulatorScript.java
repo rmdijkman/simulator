@@ -7,12 +7,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import nl.tue.simulatorgui.executor.EvaluationResult.ResultType;
+import nl.tue.bpmn.parser.BPMNParseException;
+import nl.tue.simulator_engine.core.Simulator;
 import nl.tue.simulatorgui.core.Environment;
 
 public class SimulatorScript {
 	
 	File file;
 	String fileToLoad;
+	long simulationLength;
+	long replications;
 
 	public SimulatorScript(File file){
 		this.file = file;		
@@ -22,6 +26,8 @@ public class SimulatorScript {
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
 		setFileToLoad(br.readLine());
+		setSimulationLength(Long.parseLong(br.readLine()));
+		setReplications(Long.parseLong(br.readLine()));
 		br.close();
 		fr.close();
 	}
@@ -29,14 +35,19 @@ public class SimulatorScript {
 	public void save() throws IOException {
 		PrintWriter writer = new PrintWriter(file);
 		writer.println(fileToLoad);
+		writer.println(Long.toString(simulationLength));
+		writer.println(Long.toString(replications));
 		writer.close();
 	}
 	
 	public EvaluationResult execute() {
-		//TODO: This is where the execution of the simulator should happen
-		//The results can be sent to a browser window. The browser window can display any HTML that describes the result of the simulation.
-		Environment.getMainController().newOrUpdatedBrowser(file.getName(), "Platte tekst.");
-		return new EvaluationResult("The executor does not work yet.", ResultType.ERROR);
+		try {
+			String result = Simulator.runSimulator(fileToLoad, simulationLength, replications);
+			Environment.getMainController().newOrUpdatedBrowser(file.getName(), result);
+		} catch (BPMNParseException e) {
+			return new EvaluationResult("There was an error reading the BPMN file: " + e.getMessage(), ResultType.ERROR);
+		}
+		return new EvaluationResult("", ResultType.UNDEFINED);
 	}
 	
 	public String getFileToLoad(){
@@ -45,5 +56,21 @@ public class SimulatorScript {
 	
 	public void setFileToLoad(String fileToLoad){
 		this.fileToLoad = fileToLoad;
+	}
+
+	public long getSimulationLength() {
+		return simulationLength;
+	}
+
+	public void setSimulationLength(long simulationLength) {
+		this.simulationLength = simulationLength;
+	}
+
+	public long getReplications() {
+		return replications;
+	}
+
+	public void setReplications(long replications) {
+		this.replications = replications;
 	}
 }

@@ -1,6 +1,8 @@
 package nl.tue.bpmn.parser;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,13 +30,6 @@ import nl.tue.bpmn.concepts.*;
 
 public class BPMNParser extends DefaultHandler{
 	
-	private static final Source[] BPMN_XSD = {
-            new StreamSource("./resources/specification/BPMN20.xsd"),
-            new StreamSource("./resources/specification/BPMNDI.xsd"),
-            new StreamSource("./resources/specification/DC.xsd"),
-            new StreamSource("./resources/specification/DI.xsd"),
-            new StreamSource("./resources/specification/Semantic.xsd") };
-
 	private static final String CASE_ATTRIBUTES_TAG = "case_attributes"; //The label by which case attributes are identified in the pool documentation
 	private static final String RESOURCE_TYPES_TAG = "resource_types"; //The label by which resource types are identified in the pool documentation
 	private static final String INTERARRIVAL_TIME_TAG = "interarrival_time"; //The label by which interarrival time is identified in the start event documentation
@@ -58,7 +53,7 @@ public class BPMNParser extends DefaultHandler{
 	private boolean poolBeingParsed;
 	private String resourceTypesBeingParsed;
 	
-	public BPMNParser(){
+	public BPMNParser(){		
 		errorHandler = new XMLErrorHandler();
 		hasPool = false;
 		roleBeingParsed = null;
@@ -489,6 +484,13 @@ public class BPMNParser extends DefaultHandler{
 	    spf.setNamespaceAware(true);
 	    
 	    try{
+			Source[] BPMN_XSD = new Source[5];
+			BPMN_XSD[0] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/BPMN20.xsd").toURI()).toString());
+			BPMN_XSD[1] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/BPMNDI.xsd").toURI()).toString());
+			BPMN_XSD[2] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/DC.xsd").toURI()).toString());
+			BPMN_XSD[3] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/DI.xsd").toURI()).toString());
+			BPMN_XSD[4] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/Semantic.xsd").toURI()).toString());
+
 	    	SAXParser saxParser = spf.newSAXParser();
 	    	SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 	    	Schema schema = schemaFactory.newSchema(BPMN_XSD);
@@ -503,6 +505,9 @@ public class BPMNParser extends DefaultHandler{
 	    		xmlReader.parse(fileName);
 	    	}
 	    }catch (SAXException e){
+	    	result = null;
+	    	throw new BPMNParseException("An unexpected error occurred while reading the BPMN file '" + fileName + "'.", e);
+	    }catch (URISyntaxException e){
 	    	result = null;
 	    	throw new BPMNParseException("An unexpected error occurred while reading the BPMN file '" + fileName + "'.", e);
 	    }catch (ParserConfigurationException e){

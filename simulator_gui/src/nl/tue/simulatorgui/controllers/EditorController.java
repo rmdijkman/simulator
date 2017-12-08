@@ -26,11 +26,11 @@ public class EditorController implements ViewStateSerializable {
 	}
 	
 	//Fills a simulator script with all values from the GUI
-	//TODO: This must be extended, depending on the properties of the simulator that can be provided in the GUI.
-	//		Basically, all fields from the GUI must be added to the script.
 	private SimulatorScript scriptFromView(){
 		SimulatorScript script = new SimulatorScript(file);
 		script.setFileToLoad(view.getSelectedFile());
+		script.setSimulationLength(view.getSimulationLength());
+		script.setReplications(view.getReplications());
 		return script;
 	}
 
@@ -68,9 +68,9 @@ public class EditorController implements ViewStateSerializable {
 		try{
 			SimulatorScript script = new SimulatorScript(ec.file);
 			script.load();
-			//TODO: This must be extended, depending on the properties of the simulator that can be provided in the GUI.
-			//		Basically, all fields from the script must be added to the GUI.
 			ec.view.setSelectedFile(script.getFileToLoad());
+			ec.view.setSimulationLength(script.getSimulationLength());
+			ec.view.setReplications(script.getReplications());
 		}catch (Exception e){
 			Environment.getMainController().showMessageDialog("An error occurred while trying to load the file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
 			return null;
@@ -104,6 +104,15 @@ public class EditorController implements ViewStateSerializable {
 	}
 
 	public void refreshFile() {
+		try{
+			SimulatorScript script = new SimulatorScript(file);
+			script.load();
+			view.setSelectedFile(script.getFileToLoad());
+			view.setSimulationLength(script.getSimulationLength());
+			view.setReplications(script.getReplications());
+		}catch (Exception e){
+			Environment.getMainController().showMessageDialog("An error occurred while trying to load the file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 	public String getFileName(){
