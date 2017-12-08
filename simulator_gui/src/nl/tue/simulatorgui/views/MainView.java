@@ -43,7 +43,7 @@ public class MainView extends JFrame {
 	 * Create the frame.
 	 */
 	public MainView() {
-		setTitle("Streaming Process data Analyzer");
+		setTitle("Simulator");
 		setIconImage(Toolkit.getDefaultToolkit().getImage(MainView.class.getResource("/nl/tue/resources/icons/2 (18).png")));
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(0, 0, 1024, 768);
@@ -152,7 +152,7 @@ public class MainView extends JFrame {
 		splitRoot2TopBottom = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		splitTop2BrowserEditor = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitRoot2TopBottom.setTopComponent(splitTop2BrowserEditor);
-		splitRoot2TopBottom.setDividerLocation(700);
+		splitRoot2TopBottom.setDividerLocation(500);
 		splitTop2BrowserEditor.setDividerLocation(500);
 		
 		splitTop2BrowserEditor.setLeftComponent(desktopBrowserContainer);

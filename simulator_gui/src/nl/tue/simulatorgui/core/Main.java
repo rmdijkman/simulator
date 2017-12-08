@@ -42,6 +42,8 @@ public class Main {
 				Environment.getMainController().restoreState(mcs);
 				in.close();
 				fileIn.close();
+			}else{
+				Environment.getMainController().defaultState();
 			}
 		}catch (Exception e){
 			e.printStackTrace();			

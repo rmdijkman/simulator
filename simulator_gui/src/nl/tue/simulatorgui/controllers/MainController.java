@@ -103,7 +103,7 @@ public class MainController implements ViewStateSerializable{
 		}
 		view.setDividerLocations((int[]) state.getStateVar("DIVIDER_LOCATIONS"));
 	}
-
+	
 	public void closeEditorWindow() {
 		EditorContainerController ecc = Environment.getEditorContainerController();
 		ecc.closeWindow();
@@ -149,5 +149,10 @@ public class MainController implements ViewStateSerializable{
 	
 	public void printResult(EvaluationResult er) {
 		Environment.getConsoleController().printResult(er);		
+	}
+
+	public void defaultState() {
+		openConsole();
+		openEditorWindow();
 	}
 }
