@@ -57,6 +57,9 @@ public class SimulatorModel extends Model{
 	Map<String, Double> resourceTypeProcessingTime;
 	Map<String, Double> resourceTypeIdleTime;
 	
+	//The warmup time during which no data is collected
+	private long warmup;
+	
 	private static DistributionEvaluator distributionEvaluator = new DistributionEvaluator();	
 	
 	/**
@@ -67,7 +70,7 @@ public class SimulatorModel extends Model{
 	 * @param showInReport	whether the model is shown in the report (typically true)
 	 * @param showInTrace	whether the model is shown in execution traces (typically true)
 	 */
-	public SimulatorModel(Model owner, String modelName, boolean showInReport, boolean showInTrace, BPMNModel bpmn) {
+	public SimulatorModel(Model owner, String modelName, boolean showInReport, boolean showInTrace, BPMNModel bpmn, long warmup) {
 		super(owner, modelName, showInReport, showInTrace);
 		
 		activityQueuesByName = new HashMap<String,ProcessQueue<Case>>();
@@ -83,6 +86,8 @@ public class SimulatorModel extends Model{
 		activityProcessingTimes = new ArrayList<Tuple<String, Double>>();
 		resourceTypeProcessingTime = new HashMap<String, Double>();
 		resourceTypeIdleTime = new HashMap<String, Double>();
+		
+		this.warmup = warmup;
 	}
 	
 	/**
@@ -286,34 +291,48 @@ public class SimulatorModel extends Model{
 		return bpmn;
 	}
 	
-	public void addSojournTime(Double sojournTime){
-		sojournTimes.add(sojournTime);
+	public void addSojournTime(double startTime, double endTime){
+		if (startTime > warmup){
+			double sojournTime = endTime - startTime;
+			sojournTimes.add(sojournTime);
+		}
 	}
 	
-	public void addActivityProcessingTime(String activity, Double processingTime){
-		activityProcessingTimes.add(new Tuple<String,Double>(activity, processingTime));
+	public void addActivityProcessingTime(String activity, double startTime, double endTime){
+		if (startTime > warmup){
+			double processingTime = endTime - startTime;
+			activityProcessingTimes.add(new Tuple<String,Double>(activity, processingTime));
+		}
 	}
 	
-	public void addResourceTypeProcessingTime(String resourceType, Double processingTime){
-		Double totalTime = resourceTypeProcessingTime.get(resourceType);
-		if (totalTime == null){
-			resourceTypeProcessingTime.put(resourceType, processingTime);
-		}else{
-			resourceTypeProcessingTime.put(resourceType, totalTime + processingTime);			
+	public void addResourceTypeProcessingTime(String resourceType, double startTime, double endTime){
+		if (startTime > warmup){
+			double processingTime = endTime - startTime;
+			Double totalTime = resourceTypeProcessingTime.get(resourceType);
+			if (totalTime == null){
+				resourceTypeProcessingTime.put(resourceType, processingTime);
+			}else{
+				resourceTypeProcessingTime.put(resourceType, totalTime + processingTime);			
+			}
 		}
 	}
 
-	public void addResourceTypeIdleTime(String resourceType, Double idleTime){
-		Double totalTime = resourceTypeIdleTime.get(resourceType);
-		if (totalTime == null){
-			resourceTypeIdleTime.put(resourceType, idleTime);
-		}else{
-			resourceTypeIdleTime.put(resourceType, totalTime + idleTime);			
+	public void addResourceTypeIdleTime(String resourceType, double startTime, double endTime){
+		if (startTime > warmup){
+			double idleTime = endTime - startTime;
+			Double totalTime = resourceTypeIdleTime.get(resourceType);
+			if (totalTime == null){
+				resourceTypeIdleTime.put(resourceType, idleTime);
+			}else{
+				resourceTypeIdleTime.put(resourceType, totalTime + idleTime);			
+			}
 		}
 	}
 
-	public void addProcessingTime(double processingTime) {
-		processingTimes.add(processingTime);
+	public void addProcessingTime(double startTime, double processingTime) {
+		if (startTime > warmup){
+			processingTimes.add(processingTime);
+		}
 	}
 	
 	public double meanSojournTime(){

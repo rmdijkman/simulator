@@ -69,14 +69,12 @@ public class Resource extends SimProcess{
 		Case ac = pc.removeFirst();
 		TimeSpan pt = new TimeSpan(simmodel.processingTimeSampleFor(pc));		
 		double activityStartTime = simmodel.presentTime().getTimeAsDouble();
-		double idleTime = activityStartTime - previousCompletionTime;
-		simmodel.addResourceTypeIdleTime(myType.getName(), idleTime);
+		simmodel.addResourceTypeIdleTime(myType.getName(), previousCompletionTime, activityStartTime);
 		hold(pt);
 		double activityCompletionTime = simmodel.presentTime().getTimeAsDouble();
-		double activityProcessingTime = activityCompletionTime - activityStartTime;
-		ac.addProcessingTime(activityProcessingTime);
-		simmodel.addActivityProcessingTime(n.getName(), activityProcessingTime);
-		simmodel.addResourceTypeProcessingTime(myType.getName(), activityProcessingTime);
+		ac.addProcessingTime(activityCompletionTime - activityStartTime);
+		simmodel.addActivityProcessingTime(n.getName(), activityStartTime, activityCompletionTime);
+		simmodel.addResourceTypeProcessingTime(myType.getName(), activityStartTime, activityCompletionTime);
 		previousCompletionTime = activityCompletionTime;
 		for(Arc i : n.getIncoming()){
 			i.setEnable(false);

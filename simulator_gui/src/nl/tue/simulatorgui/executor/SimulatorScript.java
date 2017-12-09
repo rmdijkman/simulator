@@ -17,6 +17,7 @@ public class SimulatorScript {
 	String fileToLoad;
 	long simulationLength;
 	long replications;
+	long warmup;
 
 	public SimulatorScript(File file){
 		this.file = file;		
@@ -28,6 +29,7 @@ public class SimulatorScript {
 		setFileToLoad(br.readLine());
 		setSimulationLength(Long.parseLong(br.readLine()));
 		setReplications(Long.parseLong(br.readLine()));
+		setWarmup(Long.parseLong(br.readLine()));
 		br.close();
 		fr.close();
 	}
@@ -37,12 +39,13 @@ public class SimulatorScript {
 		writer.println(fileToLoad);
 		writer.println(Long.toString(simulationLength));
 		writer.println(Long.toString(replications));
+		writer.println(Long.toString(warmup));
 		writer.close();
 	}
 	
 	public EvaluationResult execute() {
 		try {
-			String result = Simulator.runSimulator(fileToLoad, simulationLength, replications);
+			String result = Simulator.runSimulator(fileToLoad, simulationLength, replications, warmup);
 			Environment.getMainController().newOrUpdatedBrowser(file.getName(), result);
 		} catch (BPMNParseException e) {
 			return new EvaluationResult("There was an error reading the BPMN file: " + e.getMessage(), ResultType.ERROR);
@@ -72,5 +75,13 @@ public class SimulatorScript {
 
 	public void setReplications(long replications) {
 		this.replications = replications;
+	}
+
+	public long getWarmup() {
+		return warmup;
+	}
+
+	public void setWarmup(long warmup) {
+		this.warmup = warmup;
 	}
 }

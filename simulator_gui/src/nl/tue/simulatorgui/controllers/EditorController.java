@@ -31,6 +31,7 @@ public class EditorController implements ViewStateSerializable {
 		script.setFileToLoad(view.getSelectedFile());
 		script.setSimulationLength(view.getSimulationLength());
 		script.setReplications(view.getReplications());
+		script.setWarmup(view.getWarmup());
 		return script;
 	}
 
@@ -71,6 +72,7 @@ public class EditorController implements ViewStateSerializable {
 			ec.view.setSelectedFile(script.getFileToLoad());
 			ec.view.setSimulationLength(script.getSimulationLength());
 			ec.view.setReplications(script.getReplications());
+			ec.view.setWarmup(script.getWarmup());
 		}catch (Exception e){
 			Environment.getMainController().showMessageDialog("An error occurred while trying to load the file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
 			return null;
@@ -90,9 +92,9 @@ public class EditorController implements ViewStateSerializable {
 		if (ec != null){
 			file = ec.file;
 			fileName = ec.fileName;
-			saved = ec.saved;
 			Environment.getEditorContainerController().updateSavedState();
 			refreshFile();
+			saved = true;
 		}
 	}
 
@@ -110,6 +112,7 @@ public class EditorController implements ViewStateSerializable {
 			view.setSelectedFile(script.getFileToLoad());
 			view.setSimulationLength(script.getSimulationLength());
 			view.setReplications(script.getReplications());
+			view.setWarmup(script.getWarmup());
 		}catch (Exception e){
 			Environment.getMainController().showMessageDialog("An error occurred while trying to load the file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
 		}

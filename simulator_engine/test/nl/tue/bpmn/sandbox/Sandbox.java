@@ -22,7 +22,7 @@ public class Sandbox {
 		BPMNModel model = parser.getParsedModel();
 		
 		//Create a simulator model:
-		SimulatorModel sm = new SimulatorModel(null, "", true, true, model);
+		SimulatorModel sm = new SimulatorModel(null, "", true, true, model, 100);
 		Experiment experiment = new Experiment("Little's Law Experiment", TimeUnit.SECONDS, TimeUnit.MINUTES, null);
 		sm.connectToExperiment(experiment);
 		

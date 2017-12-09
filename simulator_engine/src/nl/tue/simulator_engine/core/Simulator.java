@@ -11,7 +11,7 @@ import nl.tue.util.Util;
 
 public class Simulator {
 
-	public static String runSimulator(String filePath, long duration, long nrReplications) throws BPMNParseException {
+	public static String runSimulator(String filePath, long duration, long nrReplications, long warmup) throws BPMNParseException {
 		BPMNParser parser = new BPMNParser();
 		parser.parse(filePath);
 		BPMNModel model = parser.getParsedModel();
@@ -19,7 +19,7 @@ public class Simulator {
 		String result = documentHead();
 
 		for (int a = 0; a < nrReplications; a++) {
-			SimulatorModel simmodel = new SimulatorModel(null, "", true, true, model);
+			SimulatorModel simmodel = new SimulatorModel(null, "", true, true, model, warmup);
 
 			Experiment experiment = new Experiment("Experiment", TimeUnit.SECONDS, TimeUnit.MINUTES, null);
 			experiment.setSeedGenerator(System.currentTimeMillis());
@@ -55,7 +55,8 @@ public class Simulator {
 			result += tableHead(new String[]{"resource type", "mean utilization rate"});			
 			Map<String, Double> meanResourceTypeIdleTimes = simmodel.meanResourceTypeIdleTimes(); 
 			for (Map.Entry<String, Double> mrtit: simmodel.meanResourceTypeProcessingTimes().entrySet()){
-				double idleTime = meanResourceTypeIdleTimes.get(mrtit.getKey());
+				Double idleTime = meanResourceTypeIdleTimes.get(mrtit.getKey());
+				idleTime = (idleTime == null)?0:idleTime; 
 				double processingTime = mrtit.getValue();
 				result += tableRow(new String[]{mrtit.getKey(), Util.round(processingTime/(processingTime+idleTime),2).toString()});  
 			}

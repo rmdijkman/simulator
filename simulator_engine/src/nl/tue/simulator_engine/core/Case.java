@@ -137,9 +137,8 @@ public class Case extends SimProcess{
 			}
 		}
 		
-		double sojournTime = simmodel.presentTime().getTimeAsDouble() - startTime;
-		simmodel.addSojournTime(sojournTime);
-		simmodel.addProcessingTime(totalProcessingTime);
+		simmodel.addSojournTime(startTime, simmodel.presentTime().getTimeAsDouble());
+		simmodel.addProcessingTime(startTime, totalProcessingTime);
 	}
 	
 	/**
