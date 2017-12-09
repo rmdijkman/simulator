@@ -1,5 +1,8 @@
 package nl.tue.simulator_engine.core;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import desmoj.core.simulator.Experiment;
@@ -17,6 +20,14 @@ public class Simulator {
 		BPMNModel model = parser.getParsedModel();
 
 		String result = documentHead();
+		
+		List<Double> sojournTimes = new ArrayList<Double>();
+		List<Double> processingTimes = new ArrayList<Double>();
+		List<Double> waitingTimes = new ArrayList<Double>();
+		
+		Map<String,List<Double>> activityProcessingTimes = new HashMap<String,List<Double>>();
+		Map<String,List<Double>> activityWaitingTimes = new HashMap<String,List<Double>>();
+		Map<String,List<Double>> resourceUtilizationRates = new HashMap<String,List<Double>>();		
 
 		for (int a = 0; a < nrReplications; a++) {
 			SimulatorModel simmodel = new SimulatorModel(null, "", true, true, model, warmup);
@@ -33,37 +44,78 @@ public class Simulator {
 			experiment.report();
 			experiment.finish();
 
-			double meanSojournTime = simmodel.meanSojournTime();
-			double meanProcessingTime = simmodel.meanProcessingTime();
+			double modelSojournTime = simmodel.meanSojournTime();
+			double modelProcessingTime = simmodel.meanProcessingTime();
+			double modelWaitingTime = modelSojournTime - modelProcessingTime;
+			sojournTimes.add(modelSojournTime);
+			processingTimes.add(modelProcessingTime);
+			waitingTimes.add(modelWaitingTime);
 			
-			result += "<h2>Process details</h2>";
-			result += tableHead(new String[]{"", "mean"});
-			result += tableRow(new String[]{"sojourn time", Util.round(meanSojournTime,2).toString()}); 
-			result += tableRow(new String[]{"processing time", Util.round(meanProcessingTime,2).toString()}); 
-			result += tableRow(new String[]{"waiting time", Util.round(meanSojournTime - meanProcessingTime,2).toString()});
-			result += tableTail(); 
-
-			result += "<h2>Activity details</h2>";
-			result += tableHead(new String[]{"activity", "mean processing time", "mean waiting time"});			
-			Map<String, Double> meanActivityWaitingTimes = simmodel.meanActivityWaitingTimes(); 
-			for (Map.Entry<String, Double> mapt: simmodel.meanActivityProcessingTimes().entrySet()){
-				result += tableRow(new String[]{mapt.getKey(), Util.round(mapt.getValue(),2).toString(), Util.round(meanActivityWaitingTimes.get(mapt.getKey()),2).toString()});  
+			Map<String, Double> modelActivityProcessingTimes = simmodel.meanActivityProcessingTimes(); 
+			for (Map.Entry<String, Double> mapt: modelActivityProcessingTimes.entrySet()){
+				List<Double> modelProcessingTimes = activityProcessingTimes.get(mapt.getKey());
+				if (modelProcessingTimes == null){
+					modelProcessingTimes = new ArrayList<Double>();					
+				}
+				modelProcessingTimes.add(mapt.getValue());
+				activityProcessingTimes.put(mapt.getKey(), modelProcessingTimes);
 			}
-			result += tableTail();
 
-			result += "<h2>Resource details</h2>";
-			result += tableHead(new String[]{"resource type", "mean utilization rate"});			
-			Map<String, Double> meanResourceTypeIdleTimes = simmodel.meanResourceTypeIdleTimes(); 
-			for (Map.Entry<String, Double> mrtit: simmodel.meanResourceTypeProcessingTimes().entrySet()){
-				Double idleTime = meanResourceTypeIdleTimes.get(mrtit.getKey());
-				idleTime = (idleTime == null)?0:idleTime; 
-				double processingTime = mrtit.getValue();
-				result += tableRow(new String[]{mrtit.getKey(), Util.round(processingTime/(processingTime+idleTime),2).toString()});  
+			Map<String, Double> modelActivityWaitingTimes = simmodel.meanActivityWaitingTimes(); 
+			for (Map.Entry<String, Double> mawt: modelActivityWaitingTimes.entrySet()){
+				List<Double> modelWaitingTimes = activityWaitingTimes.get(mawt.getKey());
+				if (modelWaitingTimes == null){
+					modelWaitingTimes = new ArrayList<Double>();					
+				}
+				modelWaitingTimes.add(mawt.getValue());
+				activityWaitingTimes.put(mawt.getKey(), modelWaitingTimes);
 			}
-			result += tableTail();
-			
+
+			Map<String, Double> modelResourceIdleTimes = simmodel.meanResourceTypeIdleTimes(); 
+			Map<String, Double> modelResourceProcessingTimes = simmodel.meanResourceTypeProcessingTimes(); 
+			for (Map.Entry<String, Double> mrpt: modelResourceProcessingTimes.entrySet()){
+				List<Double> mrptList = resourceUtilizationRates.get(mrpt.getKey());
+				if (mrptList == null){
+					mrptList = new ArrayList<Double>();					
+				}
+				Double idleTime = modelResourceIdleTimes.get(mrpt.getKey());
+				idleTime = (idleTime == null)?0:idleTime;
+				Double processingTime = mrpt.getValue();
+				mrptList.add(processingTime/(processingTime+idleTime));
+				resourceUtilizationRates.put(mrpt.getKey(), mrptList);
+			}			
 		}		
 
+		Double soj[] = Util.lowerMeanUpper(sojournTimes);
+		Double pro[] = Util.lowerMeanUpper(processingTimes);
+		Double wai[] = Util.lowerMeanUpper(waitingTimes);
+		result += "<h2>Process details</h2>";
+		result += tableHead(new String[]{"", "mean", "95% CI"});
+		result += tableRow(new String[]{"sojourn time", Util.round(soj[1],2).toString(), Util.round(soj[0],2) + "-" + Util.round(soj[2],2)}); 
+		result += tableRow(new String[]{"processing time", Util.round(pro[1],2).toString(), Util.round(pro[0],2) + "-" + Util.round(pro[2],2)}); 
+		result += tableRow(new String[]{"waiting time", Util.round(wai[1],2).toString(), Util.round(wai[0],2) + "-" + Util.round(wai[2],2)}); 
+		result += tableTail(); 
+
+		result += "<h2>Activity details</h2>";
+		result += tableHead(new String[]{"activity", "mean processing time", "95% CI", "mean waiting time", "95% CI"});			
+		for (Map.Entry<String, List<Double>> apt: activityProcessingTimes.entrySet()){
+			Double aPro[] = Util.lowerMeanUpper(apt.getValue());			
+			Double aWai[] = {0.0, 0.0, 0.0};
+			if (activityWaitingTimes.get(apt.getKey()) != null){
+				aWai = Util.lowerMeanUpper(activityWaitingTimes.get(apt.getKey()));
+			}
+			result += tableRow(new String[]{apt.getKey(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});  
+		}
+		result += tableTail();
+
+		result += "<h2>Resource details</h2>";
+		result += tableHead(new String[]{"resource type", "mean utilization rate", "95% CI"});			
+		for (Map.Entry<String, List<Double>> rur: resourceUtilizationRates.entrySet()){
+			Double uti[] = Util.lowerMeanUpper(rur.getValue());			
+			result += tableRow(new String[]{rur.getKey(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});  
+		}
+		result += tableTail();
+		
 		return result + documentTail();
 	}
 	
