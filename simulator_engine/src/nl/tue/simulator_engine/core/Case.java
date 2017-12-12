@@ -103,7 +103,7 @@ public class Case extends SimProcess{
 						}else if(n.getTypeGtw() != TypeGtw.XSplit && s_enbl){
 							enable_all(n);
 							gtw = true;
-						}else{
+						}else if(n.getTypeGtw() == TypeGtw.XSplit && s_enbl){
 							for(Arc x : n.getOutgoing()){
 								if(ce.evaluate(x.getCondition())){
 									for(Arc i: n.getIncoming()){
