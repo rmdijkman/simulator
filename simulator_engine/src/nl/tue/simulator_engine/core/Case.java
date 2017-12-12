@@ -111,6 +111,7 @@ public class Case extends SimProcess{
 									}
 									x.setEnable(true);
 									gtw = true;
+									break;
 								}
 							}
 						}

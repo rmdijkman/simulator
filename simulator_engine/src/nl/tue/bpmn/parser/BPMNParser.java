@@ -34,7 +34,7 @@ public class BPMNParser extends DefaultHandler{
 	private static final String RESOURCE_TYPES_TAG = "resource_types"; //The label by which resource types are identified in the pool documentation
 	private static final String INTERARRIVAL_TIME_TAG = "interarrival_time"; //The label by which interarrival time is identified in the start event documentation
 	private static final String PROCESSING_TIME_TAG = "processing_time"; //The label by which processing time is identified in the task documentation
-	private static final String QUEUING_STRATEGY_TAG = "queuing_strategy"; //The label by which the queuing strategy is identified in the task documentation
+	private static final String QUEUING_STRATEGY_TAG = "queueing_strategy"; //The label by which the queuing strategy is identified in the task documentation
 	private static final String RESOURCE_DEPENDENCY_TAG = "resource_dependency"; //The label by which the resource dependency is identified in the task documentation
 	private static final String ACTIVITY_DEPENDENCY_TAG = "activity_dependency"; //The label by which the activities in the resource dependency is identified in the task documentation
 	
@@ -230,7 +230,7 @@ public class BPMNParser extends DefaultHandler{
 					String queuingStrategy = processDocumentation.get(QUEUING_STRATEGY_TAG);
 					if (queuingStrategy != null){
 						List<String> parseErrors = new ArrayList<String>();
-						if(queuingStrategy != "FIFO" || queuingStrategy != "LIFO" || queuingStrategy != "RNDM"){
+						if(!queuingStrategy.equals("FIFO") && !queuingStrategy.equals("LIFO") && !queuingStrategy.equals("RNDM")){
 							parseErrors.add("Error in resource dependency expression " + queuingStrategy);
 						}
 						if(!parseErrors.isEmpty()){
@@ -243,7 +243,7 @@ public class BPMNParser extends DefaultHandler{
 					String resourceDependency = processDocumentation.get(RESOURCE_DEPENDENCY_TAG);
 					if (resourceDependency != null){
 						List<String> parseErrors = new ArrayList<String>();
-						if(resourceDependency != "NONE" || resourceDependency != "SOFD" || resourceDependency != "CASE"){
+						if(!resourceDependency.equals("NONE") && !resourceDependency.equals("SOFD") && !resourceDependency.equals("CASE")){
 							parseErrors.add("Error in resource dependency expression " + resourceDependency);
 						}
 						if(!parseErrors.isEmpty()){
