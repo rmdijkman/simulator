@@ -6,3 +6,15 @@ An implementation of an advanced business process simulation engine. The simulat
 * advanced resource simulation patterns;
 * various queueing policies; and
 * simulation parameters, in particular: number of replications and warm-up time.
+
+# Binary
+
+The binary of the simulator is downloadable from [the build folder in the simulator_gui project](https://github.com/rmdijkman/simulator/raw/master/simulator_gui/build/Simulator.jar). This binary takes the form of an executable jar.
+
+# Source
+
+The source consists of two (linked) Eclipse packages that can be imported into Eclipse from GitHub as a whole.
+
+# License
+
+The code uses the [Desmo-J project](http://desmoj.sourceforge.net/), which is bound by the Desmo-J licence.
