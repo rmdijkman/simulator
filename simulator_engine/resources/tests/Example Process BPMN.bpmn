@@ -76,7 +76,7 @@ queueing_strategy: FIFO
          <documentation id="sid-b8394404-b4ba-4207-af9e-1bd5140faae0">processing_time: N(5,1)
 queueing_strategy: FIFO
 resource_dependency: SOFD
-activity_dependency {Assess the insurance claim, Refund damage claimed}</documentation>
+activity_dependency: {Assess the insurance claim, Refund damage claimed}</documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffcc"/>
             <signavio:signavioMetaData metaKey="bordercolor" metaValue="#000000"/>
@@ -110,7 +110,7 @@ activity_dependency {Assess the insurance claim, Refund damage claimed}</documen
          <documentation id="sid-da70f031-958c-4bb7-a7ff-af8b99f3bf13">processing_time: exp(5)
 queueing_strategy: FIFO
 resource_dependency: SOFD
-activity_dependency {Assess the insurance claim, Refund damage claimed}
+activity_dependency: {Assess the insurance claim, Refund damage claimed}
 </documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffcc"/>
@@ -169,7 +169,7 @@ queueing_strategy: LIFO
          <documentation id="sid-acdbe642-2d05-4e70-a791-652bef7b5abb">processing_time: exp(5)
 queueing_strategy: FIFO
 resource_dependency: CASE
-activity_dependency {Investigate insurance claim, Determine damage to be refunded}
+activity_dependency: {Investigate insurance claim, Determine damage to be refunded}
 </documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffcc"/>
@@ -196,7 +196,7 @@ activity_dependency {Investigate insurance claim, Determine damage to be refunde
          <documentation id="sid-9d7a53ae-b84b-4b7d-aceb-345de54525bc">processing_time: N(6,2)
 queueing_strategy: FIFO
 resource_dependency: CASE
-activity_dependency {Investigate insurance claim, Determine damage to be refunded}</documentation>
+activity_dependency: {Investigate insurance claim, Determine damage to be refunded}</documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffcc"/>
             <signavio:signavioMetaData metaKey="bordercolor" metaValue="#000000"/>

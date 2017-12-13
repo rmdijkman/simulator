@@ -239,7 +239,6 @@ public class BPMNParser extends DefaultHandler{
 							nodeBeingParsed.setQueuingStrategy(queuingStrategy);
 						}
 					}
-					//TODO If this is empty activitydependency should also be empty
 					String resourceDependency = processDocumentation.get(RESOURCE_DEPENDENCY_TAG);
 					if (resourceDependency != null){
 						List<String> parseErrors = new ArrayList<String>();
@@ -252,13 +251,12 @@ public class BPMNParser extends DefaultHandler{
 							nodeBeingParsed.setResourceDependency(resourceDependency);
 						}
 					}
-					//TODO Parse the string to nodes here or in the simulator
-					//TODO If this is empty resourcedependency should also be empty
 					String activityDependency = processDocumentation.get(ACTIVITY_DEPENDENCY_TAG);
 					if (activityDependency != null){
 						List<String> parseErrors = new ArrayList<String>();
-						String [] acd = activityDependency.split("{");
-						String [] act = acd[2].split(",");
+						String [] acd = activityDependency.split("\\{");
+						String [] ace = acd[1].split("\\}");
+						String [] act = ace[0].split(",");
 						Set <String> actset = new HashSet<String>();
 						for(String a : act){
 							actset.add(a);
@@ -345,6 +343,61 @@ public class BPMNParser extends DefaultHandler{
 					node.setTypeGtw((node.getTypeGtw() == TypeGtw.ParSplit)?TypeGtw.ParJoin:TypeGtw.XJoin);					
 				}
 			}
+		}
+		for (Node node: result.getNodes()){
+			Set<String> sact =  node.getStractDependency();
+			if(sact != null){
+				for (String act : sact) {
+					boolean eql = false;
+					for (Node n : result.getNodes()) {
+						if (n.getName().equals(act)) {
+							eql = true;
+							if (node.getActivityDependency() == null) {
+								Set<Node> sn = new HashSet<Node>();
+								sn.add(n);
+								node.setActivityDependency(sn);
+							} else {
+								Set<Node> se = node.getActivityDependency();
+								se.add(n);
+								node.setActivityDependency(se);
+							}
+							break;
+						}
+					}
+					if (!eql) {
+						errors.add("Unexpected error: The following node has an incorrect activity dependency set: " + node.getName()
+								+ " where activity : " + act + " does not exist in the model.");
+					}
+				}
+			}
+		}
+		for(Node node: result.getNodes()){
+			//Check if if there is a resource dependency tag there are activities defined
+			if(node.getResourceDependency() != null && !node.getResourceDependency().equals("NONE")){
+				if(node.getActivityDependency() == null){
+					errors.add("The following node has no activities involved in the resource dependency: "+ node.getName());
+				}else if(node.getActivityDependency().size() == 0){
+					errors.add("The following node has no activities involved in the resource dependency: "+ node.getName());
+				}else if(node.getActivityDependency().size() == 1){
+					errors.add("The following node has only one activity involved in the resource dependency: "+ node.getName());
+				}
+			}
+			//Check if there is a resource dependency tag if there are activities defined
+			if(node.getActivityDependency() != null){
+				if(node.getResourceDependency() == null || node.getResourceDependency().equals("NONE")){
+					errors.add("The following node has no resource dependency indicated, but has dependent activities defined: " + node.getName());
+				}
+				//Check if all activities have the resource dependency if they are mentioned
+				for(Node n: node.getActivityDependency()){
+					if(!(node.getActivityDependency().equals(n.getActivityDependency()))){
+						errors.add("The following node is missing activities in the activity dependency set: "+ node.getName());
+					}
+					if(!(node.getResourceDependency().equals(n.getResourceDependency()))){
+						errors.add("The following node has a conflict in resource dependency type with an activity in the activity dependency set: " + node.getName());
+					}
+				}
+			}
+			
 		}
 		for (String resourceType: resourceTypesBeingParsed.split(";")){
 			int splitPoint = resourceType.indexOf(':');

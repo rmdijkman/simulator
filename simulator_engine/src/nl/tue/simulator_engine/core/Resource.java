@@ -37,21 +37,33 @@ public class Resource extends SimProcess{
 						ProcessQueue<Case> pc = simmodel.queueForActivity(n.getName());
 						if (!pc.isEmpty()) {
 							Case c = pc.first();
-							if (n.getResourceDependency() != null && !(n.getResourceDependency() == "NONE")) {
+							if (n.getResourceDependency() != null && !(n.getResourceDependency().equals("NONE"))) {
 								for (Node d : n.getActivityDependency()) {
-									if (n.getResourceDependency() == "CASE") {
-										if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d))
-												|| c.getResourceOfNode(d).equals(null))) {
-											ResourceAllocation(n, pc);
+									if (n.getResourceDependency().equals("CASE")) {
+										if (!(c.getResourceOfNode(d) == null)) {
+											if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d))
+													|| c.getResourceOfNode(d).equals(null))) {
+												ResourceAllocation(n, pc);
+												break;
+												}
+										}else{
+											ResourceAllocation(n,pc);
+											break;
+											
 										}
-									} else if (n.getResourceDependency() == "SOFD") {
-										if (!(d.equals(n)) && (!((this.equals(c.getResourceOfNode(d))))
-												|| c.getResourceOfNode(d).equals(null))) {
-											ResourceAllocation(n, pc);
+									} else if (n.getResourceDependency().equals("SOFD")) {
+										if (!(c.getResourceOfNode(d) == null)) {
+											if (!(d.equals(n)) && (!(this.equals(c.getResourceOfNode(d))))) {
+												ResourceAllocation(n, pc);
+												break;
+											}
+										}else{
+											ResourceAllocation(n,pc);
+											break;
 										}
 									}
 								}
-							} else {
+							} else if(n.getResourceDependency() == null || (n.getResourceDependency().equals("NONE"))) {
 								// If there is no resource dependency process
 								// the case is processed
 								ResourceAllocation(n, pc);
