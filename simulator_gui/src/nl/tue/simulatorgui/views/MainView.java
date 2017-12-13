@@ -68,53 +68,33 @@ public class MainView extends JFrame {
 		});
 		mnFile.add(mntmStream);
 		
-		JSeparator separator_1 = new JSeparator();
-		mnFile.add(separator_1);
-		
-		JMenuItem mntmOpen = new JMenuItem("Open File");
+		JMenuItem mntmOpen = new JMenuItem("Open Simulator");
 		mntmOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Environment.getMainController().loadFile();
 			}
 		});
 		mnFile.add(mntmOpen);
-		
-		JSeparator separator = new JSeparator();
-		mnFile.add(separator);
-		
-		JMenuItem mntmSave = new JMenuItem("Save");
+				
+		JMenuItem mntmSave = new JMenuItem("Save Simulator");
+		mntmSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Environment.getEditorContainerController().saveSimulator();
+			}
+		});
 		mnFile.add(mntmSave);
-		
-		JMenuItem mntmSaveAs = new JMenuItem("Save As");
-		mnFile.add(mntmSaveAs);
-		
-		JMenuItem mntmSaveAll = new JMenuItem("Save All");
-		mnFile.add(mntmSaveAll);
-		
-		JSeparator separator_2 = new JSeparator();
-		mnFile.add(separator_2);
-		
-		JMenuItem mntmClose = new JMenuItem("Close");
-		mnFile.add(mntmClose);
-		
-		JMenuItem mntmCloseAll = new JMenuItem("Close All");
-		mnFile.add(mntmCloseAll);
-		
-		JSeparator separator_3 = new JSeparator();
-		mnFile.add(separator_3);
-		
+				
 		JMenuItem mntmQuit = new JMenuItem("Quit");
+		mntmQuit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Environment.getMainController().closeProgram();;
+			}
+		});
 		mnFile.add(mntmQuit);
 		
 		Component horizontalStrut = Box.createHorizontalStrut(10);
 		menuBar.add(horizontalStrut);
-		
-		JMenu mnEdit = new JMenu("Edit");
-		menuBar.add(mnEdit);		
-		
-		Component horizontalStrut_1 = Box.createHorizontalStrut(10);
-		menuBar.add(horizontalStrut_1);
-
+				
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);		
 		
