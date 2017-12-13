@@ -1,6 +1,9 @@
 package nl.tue.util;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class Util {
 
@@ -38,4 +41,18 @@ public class Util {
 	    return new Double[]{mean - temp, mean, mean + temp};
 	}
 	
+	public static Integer[] randomOrder(int ofLength){
+		Random rand = new Random(System.currentTimeMillis());
+		List<Integer> listOfNumbers = new LinkedList<Integer>();
+		for (int i = 0; i < ofLength; i++){
+			listOfNumbers.add(i);
+		}
+		List<Integer> resultingListOfNumbers = new ArrayList<Integer>();
+		for (int i = 0; i < ofLength; i++){			
+			int randomIndex = rand.nextInt(listOfNumbers.size());
+			resultingListOfNumbers.add(listOfNumbers.get(randomIndex));
+			listOfNumbers.remove(randomIndex);
+		}		
+		return resultingListOfNumbers.toArray(new Integer[0]);
+	}
 }
