@@ -54,7 +54,7 @@ resource_types: Employee: 1
          <incoming>sid-262409A8-B955-411B-97CF-F087C5E2D384</incoming>
       </endEvent>
       <startEvent id="sid-F6F95364-8370-420E-BFEF-0442C369F49F" name="start">
-         <documentation id="sid-140986ce-efe1-460d-b738-80331f89be70">interarrival_time: exp(4)
+         <documentation id="sid-140986ce-efe1-460d-b738-80331f89be70">interarrival_time: exp(0.25)
 </documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffff"/>
