@@ -1,5 +1,8 @@
 package nl.tue.simulator_engine.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
 import desmoj.core.simulator.SimProcess;
@@ -10,6 +13,7 @@ import nl.tue.bpmn.concepts.Node;
 import nl.tue.bpmn.concepts.ResourceType;
 import nl.tue.bpmn.concepts.Role;
 import nl.tue.bpmn.concepts.Type;
+import nl.tue.util.Util;
 
 public class Resource extends SimProcess{
 	static int identifier = 0;
@@ -32,7 +36,11 @@ public class Resource extends SimProcess{
 		ProcessQueue<Resource> myQueue = simmodel.queueForResourceType(myType.getName());
 		while (true) {
 			for(Role r : myType.getRoles()){
-				for (Node n : r.getContainedNodes()) {
+				Node[] arrnode = r.getContainedNodes().toArray(new Node[r.getContainedNodes().size()]);
+				Integer [] rand = Util.randomOrder(r.getContainedNodes().size());
+				for (int j = 0; j < rand.length; j++ ) {
+					int random = rand[j]; 
+					Node n = arrnode[random];
 					if (n.getType() == Type.Task) {
 						ProcessQueue<Case> pc = simmodel.queueForActivity(n.getName());
 						if (!pc.isEmpty()) {

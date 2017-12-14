@@ -114,7 +114,6 @@ public class EditorController implements ViewStateSerializable {
 			view.setReplications(script.getReplications());
 			view.setWarmup(script.getWarmup());
 		}catch (Exception e){
-			Environment.getMainController().showMessageDialog("An error occurred while trying to load the file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	

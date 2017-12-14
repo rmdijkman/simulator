@@ -130,6 +130,9 @@ public class EditorView extends JPanel implements ActionListener {
 	}
 
 	public String getSelectedFile() {
+		if (selectedFile == null){
+			return "";
+		}
 		return selectedFile;
 	}
 
@@ -144,11 +147,19 @@ public class EditorView extends JPanel implements ActionListener {
 	}
 
 	public long getSimulationLength(){
-		return Long.parseLong(txtLength.getText());
+		Long result = 0L;
+		try{
+			result = Long.parseLong(txtLength.getText());
+		}catch (Exception e){}
+		return result;
 	}
 
 	public long getReplications(){
-		return Long.parseLong(txtReplications.getText());
+		Long result = 0L;
+		try{
+			result = Long.parseLong(txtReplications.getText());
+		}catch (Exception e){}
+		return result;
 	}
 
 	public void setReplications(long replications){
@@ -156,7 +167,11 @@ public class EditorView extends JPanel implements ActionListener {
 	}
 
 	public long getWarmup(){
-		return Long.parseLong(txtWarmup.getText());
+		Long result = 0L;
+		try{
+			result = Long.parseLong(txtWarmup.getText());
+		}catch (Exception e){}
+		return result;
 	}
 
 	public void setWarmup(long warmup){
@@ -187,6 +202,9 @@ public class EditorView extends JPanel implements ActionListener {
 		}
 
 		private boolean test(String text) {
+			if (text.length() == 0){
+				return true;
+			}
 			try {
 				Integer.parseInt(text);
 				return true;
