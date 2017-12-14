@@ -105,6 +105,7 @@ public class ConditionEvaluator {
 		if (dataItemValue == null){
 			return false;
 		}
+
 		Double numericValue = Double.parseDouble(dataItemValue);
 		Double compareValue = Double.parseDouble(condition.NUMBER().getText());
 		String comparator = condition.COMPARATOR().getText();

@@ -47,8 +47,7 @@ public class Resource extends SimProcess{
 								for (Node d : n.getActivityDependency()) {
 									if (n.getResourceDependency().equals("CASE")) {
 										if (!(c.getResourceOfNode(d) == null)) {
-											if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d))
-													|| c.getResourceOfNode(d).equals(null))) {
+											if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d)))) {
 												ResourceAllocation(n, pc);
 												doneSomething = true;
 												break;
