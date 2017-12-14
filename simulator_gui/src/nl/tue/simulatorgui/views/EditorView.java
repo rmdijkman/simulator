@@ -54,9 +54,7 @@ public class EditorView extends JPanel implements ActionListener {
 		btnFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				controller.fileChanged();
-				if (selectFile()){
-					controller.refreshFile();
-				}
+				selectFile();
 			}
 		});
 		btnFile.setBounds(450, 48, 32, 28);

@@ -93,7 +93,15 @@ public class EditorController implements ViewStateSerializable {
 			file = ec.file;
 			fileName = ec.fileName;
 			Environment.getEditorContainerController().updateSavedState();
-			refreshFile();
+			try{
+				SimulatorScript script = new SimulatorScript(file);
+				script.load();
+				view.setSelectedFile(script.getFileToLoad());
+				view.setSimulationLength(script.getSimulationLength());
+				view.setReplications(script.getReplications());
+				view.setWarmup(script.getWarmup());
+			}catch (Exception e){
+			}
 			saved = true;
 		}
 	}
@@ -105,18 +113,6 @@ public class EditorController implements ViewStateSerializable {
 		}
 	}
 
-	public void refreshFile() {
-		try{
-			SimulatorScript script = new SimulatorScript(file);
-			script.load();
-			view.setSelectedFile(script.getFileToLoad());
-			view.setSimulationLength(script.getSimulationLength());
-			view.setReplications(script.getReplications());
-			view.setWarmup(script.getWarmup());
-		}catch (Exception e){
-		}
-	}
-	
 	public String getFileName(){
 		return fileName;
 	}

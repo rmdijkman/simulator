@@ -10,7 +10,7 @@
       <participant id="sid-CF0AD195-F36A-481D-B066-80B6BC7BD7CC" name="The Random Insurance Company (RIC)" processRef="sid-964280C8-92CC-49F8-B436-C84D8E653A59">
          <documentation id="sid-ad10ee8e-b5ff-49a8-bd36-4f4a9d2a8eba">case_attributes: Amount: N(1000, 250) ; Risklevel: [{high, 10%}, {medium, 20%}, {low, 70%}]}]
 
-resource_types: Junior: 8; Senior: 5; Senior,Junior: 1
+resource_types: Junior: 4; Senior: 1; Senior,Junior: 1
 </documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffff"/>
@@ -107,7 +107,7 @@ activity_dependency: {Assess the insurance claim,Refund damage claimed}</documen
          <outgoing>sid-2C3D3CA3-EC65-48AD-901E-FA464811F90B</outgoing>
       </startEvent>
       <task completionQuantity="1" id="sid-68DCE6CA-1E71-49F0-A3C8-18189E89F4F6" isForCompensation="false" name="Assess the insurance claim" startQuantity="1">
-         <documentation id="sid-da70f031-958c-4bb7-a7ff-af8b99f3bf13">processing_time: exp(5)
+         <documentation id="sid-da70f031-958c-4bb7-a7ff-af8b99f3bf13">processing_time: exp(0.5)
 queueing_strategy: FIFO
 resource_dependency: SOFD
 activity_dependency: {Assess the insurance claim,Refund damage claimed}
@@ -150,7 +150,7 @@ queueing_strategy: FIFO
          <outgoing>sid-E8AF28F6-D8B9-4D20-95A4-36ED2FC8FC99</outgoing>
       </exclusiveGateway>
       <task completionQuantity="1" id="sid-A8A5DD3C-96A0-486C-A974-B5F9B7050F8B" isForCompensation="false" name="Call third party to verify the damage" startQuantity="1">
-         <documentation id="sid-4ffb336b-7b3c-4c39-b016-a0d4d0713581">processing_time: exp(8)
+         <documentation id="sid-4ffb336b-7b3c-4c39-b016-a0d4d0713581">processing_time: exp(0.25)
 queueing_strategy: LIFO
 </documentation>
          <extensionElements>
@@ -166,7 +166,7 @@ queueing_strategy: LIFO
          <outgoing>sid-1D8F4B52-7D36-4FA7-B70E-300CA1996436</outgoing>
       </task>
       <task completionQuantity="1" id="sid-9BF5F7CD-FFB1-48DF-B8EE-4304764FBD06" isForCompensation="false" name="Investigate insurance claim" startQuantity="1">
-         <documentation id="sid-acdbe642-2d05-4e70-a791-652bef7b5abb">processing_time: exp(5)
+         <documentation id="sid-acdbe642-2d05-4e70-a791-652bef7b5abb">processing_time: N(10,2)
 queueing_strategy: FIFO
 resource_dependency: CASE
 activity_dependency: {Investigate insurance claim,Determine damage to be refunded}

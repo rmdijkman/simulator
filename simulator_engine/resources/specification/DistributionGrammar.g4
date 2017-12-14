@@ -7,6 +7,6 @@ distribution	: 'exp' '(' NUMBER ')' | 'N' '(' NUMBER ',' NUMBER ')' | '[' value_
 value_series	: value (',' value)*;
 value			: '{' TERM ',' NUMBER '%' '}';   
 TERM			: [a-zA-Z]+;
-NUMBER			: [0-9]+('.'[0-9]+)? ;
+NUMBER			: [0-9]+('.'[0-9]+)?;
 
 WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
