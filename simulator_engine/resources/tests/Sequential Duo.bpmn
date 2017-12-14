@@ -73,7 +73,7 @@ activity_dependency: {a,b}</documentation>
          <incoming>sid-15259A9D-2872-4DDC-93F6-312B1319C037</incoming>
       </endEvent>
       <startEvent id="sid-F6F95364-8370-420E-BFEF-0442C369F49F" name="start">
-         <documentation id="sid-769f5d58-2413-45be-9a51-0ba5e79958b6">interarrival_time: exp(2)
+         <documentation id="sid-769f5d58-2413-45be-9a51-0ba5e79958b6">interarrival_time: exp(1)
 </documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffff"/>

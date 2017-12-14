@@ -105,8 +105,8 @@ public class ConditionEvaluator {
 		if (dataItemValue == null){
 			return false;
 		}
-		long numericValue = Long.parseLong(dataItemValue);
-		long compareValue = Long.parseLong(condition.NUMBER().getText());
+		double numericValue = Double.parseDouble(dataItemValue);
+		double compareValue = Double.parseDouble(condition.NUMBER().getText());
 		String comparator = condition.COMPARATOR().getText();
 		if (comparator.equals("=")){
 			return numericValue == compareValue;
