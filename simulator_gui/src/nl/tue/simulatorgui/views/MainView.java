@@ -12,7 +12,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.Toolkit;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDesktopPane;

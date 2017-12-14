@@ -155,4 +155,8 @@ public class MainController implements ViewStateSerializable{
 		openConsole();
 		openEditorWindow();
 	}
+	
+	public MainView getMainView(){
+		return view;
+	}
 }

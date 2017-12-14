@@ -15,6 +15,10 @@ import nl.tue.util.Util;
 public class Simulator {
 
 	public static String runSimulator(String filePath, long duration, long nrReplications, long warmup) throws BPMNParseException {
+		return Simulator.runSimulator(filePath, duration, nrReplications, warmup, null);
+	}
+	
+	public static String runSimulator(String filePath, long duration, long nrReplications, long warmup, ReplicationMonitor monitor) throws BPMNParseException {
 		BPMNParser parser = new BPMNParser();
 		parser.parse(filePath);
 		BPMNModel model = parser.getParsedModel();
@@ -83,7 +87,10 @@ public class Simulator {
 				Double processingTime = mrpt.getValue();
 				mrptList.add(processingTime/(processingTime+idleTime));
 				resourceUtilizationRates.put(mrpt.getKey(), mrptList);
-			}			
+			}
+			if (monitor != null){
+				monitor.setCurrentReplication(a);
+			}
 		}		
 
 		Double soj[] = Util.lowerMeanUpper(sojournTimes);
