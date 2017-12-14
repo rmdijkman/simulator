@@ -1,8 +1,5 @@
 package nl.tue.simulator_engine.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
 import desmoj.core.simulator.SimProcess;

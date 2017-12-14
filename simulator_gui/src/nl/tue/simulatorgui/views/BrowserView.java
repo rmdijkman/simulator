@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 
 import javax.swing.JInternalFrame;
-import javax.swing.JOptionPane;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
@@ -14,7 +13,6 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import netscape.javascript.JSObject;
 import nl.tue.simulatorgui.controllers.BrowserController;
 import nl.tue.simulatorgui.core.Environment;
 

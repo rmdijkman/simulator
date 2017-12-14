@@ -7,11 +7,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import nl.tue.simulatorgui.executor.EvaluationResult.ResultType;
-import nl.tue.bpmn.parser.BPMNParseException;
-import nl.tue.simulator_engine.core.Simulator;
+import nl.tue.simulatorgui.views.SimulatorWithProgressDialog;
 import nl.tue.simulatorgui.core.Environment;
 
-public class SimulatorScript {
+public class SimulatorScript{
 	
 	File file;
 	String fileToLoad;
@@ -44,13 +43,16 @@ public class SimulatorScript {
 	}
 	
 	public EvaluationResult execute() {
-		try {
-			String result = Simulator.runSimulator(fileToLoad, simulationLength, replications, warmup);
-			Environment.getMainController().newOrUpdatedBrowser(file.getName(), result);
-		} catch (BPMNParseException e) {
-			return new EvaluationResult("There was an error reading the BPMN file: " + e.getMessage(), ResultType.ERROR);
-		}
+		new SimulatorWithProgressDialog(fileToLoad, simulationLength, replications, warmup, this);
 		return new EvaluationResult("", ResultType.UNDEFINED);
+	}
+	
+	public void callBackResult(String result){
+		Environment.getMainController().newOrUpdatedBrowser(file.getName(), result);		
+	}
+	
+	public void callBackException(String exception){
+		Environment.getMainController().printResult(new EvaluationResult(exception, ResultType.ERROR));
 	}
 	
 	public String getFileToLoad(){
