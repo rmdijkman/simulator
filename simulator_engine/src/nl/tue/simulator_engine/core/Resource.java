@@ -35,6 +35,7 @@ public class Resource extends SimProcess{
 	public void lifeCycle() {
 		ProcessQueue<Resource> myQueue = simmodel.queueForResourceType(myType.getName());
 		while (true) {
+			boolean doneSomething = false;
 			for(Role r : myType.getRoles()){
 				Node[] arrnode = r.getContainedNodes().toArray(new Node[r.getContainedNodes().size()]);
 				Integer [] rand = Util.randomOrder(r.getContainedNodes().size());
@@ -52,10 +53,12 @@ public class Resource extends SimProcess{
 											if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d))
 													|| c.getResourceOfNode(d).equals(null))) {
 												ResourceAllocation(n, pc);
+												doneSomething = true;
 												break;
 												}
 										}else{
 											ResourceAllocation(n,pc);
+											doneSomething = true;
 											break;
 											
 										}
@@ -63,10 +66,12 @@ public class Resource extends SimProcess{
 										if (!(c.getResourceOfNode(d) == null)) {
 											if (!(d.equals(n)) && (!(this.equals(c.getResourceOfNode(d))))) {
 												ResourceAllocation(n, pc);
+												doneSomething = true;
 												break;
 											}
 										}else{
 											ResourceAllocation(n,pc);
+											doneSomething = true;
 											break;
 										}
 									}
@@ -75,13 +80,19 @@ public class Resource extends SimProcess{
 								// If there is no resource dependency process
 								// the case is processed
 								ResourceAllocation(n, pc);
+								doneSomething = true;
 							}
 						}
 					}
 				}
+				if (doneSomething){
+					break;
+				}
 			}
-			myQueue.insert(this);
-			passivate();
+			if(!doneSomething){
+				myQueue.insert(this);
+				passivate();
+			}
 		}
 	}
 	
