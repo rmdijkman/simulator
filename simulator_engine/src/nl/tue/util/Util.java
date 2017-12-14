@@ -40,7 +40,36 @@ public class Util {
 	    double temp = confidenceLevel * standardDeviation / Math.sqrt((double) values.size());
 	    return new Double[]{mean - temp, mean, mean + temp};
 	}
-	
+
+	public static Double mean(List<Double> values) {
+	    //calculate the mean
+	    double sum = 0.0;
+	    for (double v: values) {
+	        sum += v;
+	    }
+	    return sum/((double)values.size());
+	}
+
+	public static Double variance(List<Double> values) {
+	    //calculate the mean
+	    double sum = 0.0;
+	    for (double v: values) {
+	        sum += v;
+	    }
+	    double mean = sum/((double)values.size());
+
+	    //calculate standard deviation
+	    double squaredDifferenceSum = 0.0;
+	    for (double v: values) {
+	        squaredDifferenceSum += (v - mean) * (v - mean);
+	    }
+	    return squaredDifferenceSum/((double)values.size());
+	}
+
+	public static Double sd(List<Double> values) {
+	    return Math.sqrt(variance(values));
+	}
+
 	public static Integer[] randomOrder(int ofLength){
 		Random rand = new Random(System.currentTimeMillis());
 		List<Integer> listOfNumbers = new LinkedList<Integer>();

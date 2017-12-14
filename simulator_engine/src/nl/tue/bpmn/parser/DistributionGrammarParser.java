@@ -1,4 +1,4 @@
-// Generated from DistributionGrammar.g4 by ANTLR 4.7
+// Generated from DistributionGrammar.g4 by ANTLR 4.4
 
     package nl.tue.bpmn.parser;
 
@@ -13,63 +13,29 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class DistributionGrammarParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.7", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.4", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
-		T__9=10, TERM=11, NUMBER=12, WS=13;
+		T__9=1, T__8=2, T__7=3, T__6=4, T__5=5, T__4=6, T__3=7, T__2=8, T__1=9, 
+		T__0=10, TERM=11, NUMBER=12, WS=13;
+	public static final String[] tokenNames = {
+		"<INVALID>", "'%'", "'('", "')'", "'exp'", "'{'", "'['", "','", "'}'", 
+		"']'", "'N'", "TERM", "NUMBER", "WS"
+	};
 	public static final int
 		RULE_distribution = 0, RULE_value_series = 1, RULE_value = 2;
 	public static final String[] ruleNames = {
 		"distribution", "value_series", "value"
 	};
 
-	private static final String[] _LITERAL_NAMES = {
-		null, "'exp'", "'('", "')'", "'N'", "','", "'['", "']'", "'{'", "'%'", 
-		"'}'"
-	};
-	private static final String[] _SYMBOLIC_NAMES = {
-		null, null, null, null, null, null, null, null, null, null, null, "TERM", 
-		"NUMBER", "WS"
-	};
-	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
-
-	/**
-	 * @deprecated Use {@link #VOCABULARY} instead.
-	 */
-	@Deprecated
-	public static final String[] tokenNames;
-	static {
-		tokenNames = new String[_SYMBOLIC_NAMES.length];
-		for (int i = 0; i < tokenNames.length; i++) {
-			tokenNames[i] = VOCABULARY.getLiteralName(i);
-			if (tokenNames[i] == null) {
-				tokenNames[i] = VOCABULARY.getSymbolicName(i);
-			}
-
-			if (tokenNames[i] == null) {
-				tokenNames[i] = "<INVALID>";
-			}
-		}
-	}
-
-	@Override
-	@Deprecated
-	public String[] getTokenNames() {
-		return tokenNames;
-	}
-
-	@Override
-
-	public Vocabulary getVocabulary() {
-		return VOCABULARY;
-	}
-
 	@Override
 	public String getGrammarFileName() { return "DistributionGrammar.g4"; }
+
+	@Override
+	public String[] getTokenNames() { return tokenNames; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -85,10 +51,10 @@ public class DistributionGrammarParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class DistributionContext extends ParserRuleContext {
-		public List<TerminalNode> NUMBER() { return getTokens(DistributionGrammarParser.NUMBER); }
 		public TerminalNode NUMBER(int i) {
 			return getToken(DistributionGrammarParser.NUMBER, i);
 		}
+		public List<TerminalNode> NUMBER() { return getTokens(DistributionGrammarParser.NUMBER); }
 		public Value_seriesContext value_series() {
 			return getRuleContext(Value_seriesContext.class,0);
 		}
@@ -111,47 +77,33 @@ public class DistributionGrammarParser extends Parser {
 		enterRule(_localctx, 0, RULE_distribution);
 		try {
 			setState(20);
-			_errHandler.sync(this);
 			switch (_input.LA(1)) {
-			case T__0:
+			case T__6:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(6);
-				match(T__0);
-				setState(7);
-				match(T__1);
-				setState(8);
-				match(NUMBER);
-				setState(9);
-				match(T__2);
+				setState(6); match(T__6);
+				setState(7); match(T__8);
+				setState(8); match(NUMBER);
+				setState(9); match(T__7);
 				}
 				break;
-			case T__3:
+			case T__0:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(10);
-				match(T__3);
-				setState(11);
-				match(T__1);
-				setState(12);
-				match(NUMBER);
-				setState(13);
-				match(T__4);
-				setState(14);
-				match(NUMBER);
-				setState(15);
-				match(T__2);
+				setState(10); match(T__0);
+				setState(11); match(T__8);
+				setState(12); match(NUMBER);
+				setState(13); match(T__3);
+				setState(14); match(NUMBER);
+				setState(15); match(T__7);
 				}
 				break;
-			case T__5:
+			case T__4:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(16);
-				match(T__5);
-				setState(17);
-				value_series();
-				setState(18);
-				match(T__6);
+				setState(16); match(T__4);
+				setState(17); value_series();
+				setState(18); match(T__1);
 				}
 				break;
 			default:
@@ -197,18 +149,15 @@ public class DistributionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(22);
-			value();
+			setState(22); value();
 			setState(27);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==T__4) {
+			while (_la==T__3) {
 				{
 				{
-				setState(23);
-				match(T__4);
-				setState(24);
-				value();
+				setState(23); match(T__3);
+				setState(24); value();
 				}
 				}
 				setState(29);
@@ -251,18 +200,12 @@ public class DistributionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(30);
-			match(T__7);
-			setState(31);
-			match(TERM);
-			setState(32);
-			match(T__4);
-			setState(33);
-			match(NUMBER);
-			setState(34);
-			match(T__8);
-			setState(35);
-			match(T__9);
+			setState(30); match(T__5);
+			setState(31); match(TERM);
+			setState(32); match(T__3);
+			setState(33); match(NUMBER);
+			setState(34); match(T__9);
+			setState(35); match(T__2);
 			}
 		}
 		catch (RecognitionException re) {
@@ -277,17 +220,17 @@ public class DistributionGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\17(\4\2\t\2\4\3\t"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\17(\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2"+
 		"\27\n\2\3\3\3\3\3\3\7\3\34\n\3\f\3\16\3\37\13\3\3\4\3\4\3\4\3\4\3\4\3"+
-		"\4\3\4\3\4\2\2\5\2\4\6\2\2\2\'\2\26\3\2\2\2\4\30\3\2\2\2\6 \3\2\2\2\b"+
-		"\t\7\3\2\2\t\n\7\4\2\2\n\13\7\16\2\2\13\27\7\5\2\2\f\r\7\6\2\2\r\16\7"+
-		"\4\2\2\16\17\7\16\2\2\17\20\7\7\2\2\20\21\7\16\2\2\21\27\7\5\2\2\22\23"+
-		"\7\b\2\2\23\24\5\4\3\2\24\25\7\t\2\2\25\27\3\2\2\2\26\b\3\2\2\2\26\f\3"+
-		"\2\2\2\26\22\3\2\2\2\27\3\3\2\2\2\30\35\5\6\4\2\31\32\7\7\2\2\32\34\5"+
+		"\4\3\4\3\4\2\2\5\2\4\6\2\2\'\2\26\3\2\2\2\4\30\3\2\2\2\6 \3\2\2\2\b\t"+
+		"\7\6\2\2\t\n\7\4\2\2\n\13\7\16\2\2\13\27\7\5\2\2\f\r\7\f\2\2\r\16\7\4"+
+		"\2\2\16\17\7\16\2\2\17\20\7\t\2\2\20\21\7\16\2\2\21\27\7\5\2\2\22\23\7"+
+		"\b\2\2\23\24\5\4\3\2\24\25\7\13\2\2\25\27\3\2\2\2\26\b\3\2\2\2\26\f\3"+
+		"\2\2\2\26\22\3\2\2\2\27\3\3\2\2\2\30\35\5\6\4\2\31\32\7\t\2\2\32\34\5"+
 		"\6\4\2\33\31\3\2\2\2\34\37\3\2\2\2\35\33\3\2\2\2\35\36\3\2\2\2\36\5\3"+
-		"\2\2\2\37\35\3\2\2\2 !\7\n\2\2!\"\7\r\2\2\"#\7\7\2\2#$\7\16\2\2$%\7\13"+
-		"\2\2%&\7\f\2\2&\7\3\2\2\2\4\26\35";
+		"\2\2\2\37\35\3\2\2\2 !\7\7\2\2!\"\7\r\2\2\"#\7\t\2\2#$\7\16\2\2$%\7\3"+
+		"\2\2%&\7\n\2\2&\7\3\2\2\2\4\26\35";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

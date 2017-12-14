@@ -29,17 +29,17 @@ public class DistributionEvaluator {
 	
 	private String evaluate(DistributionContext dc){
 		if (dc.getText().startsWith("exp")){
-			long lambda = Long.parseLong(dc.NUMBER(0).getText());
-			return Long.toString(RandomGenerator.generateExponential(lambda));
+			double lambda = Double.parseDouble(dc.NUMBER(0).getText());
+			return Double.toString(RandomGenerator.generateExponential(lambda));
 		}else if (dc.getText().startsWith("N")){
-			long mu = Long.parseLong(dc.NUMBER(0).getText());
-			long sigma = Long.parseLong(dc.NUMBER(1).getText());
-			return Long.toString(RandomGenerator.generateNormal(mu,sigma));			
+			double mu = Double.parseDouble(dc.NUMBER(0).getText());
+			double sigma = Double.parseDouble(dc.NUMBER(1).getText());
+			return Double.toString(RandomGenerator.generateNormal(mu,sigma));			
 		}else{
-			long r = RandomGenerator.generateUniform(100);
-			long curr = 0;
+			double r = RandomGenerator.generateUniform(100);
+			double curr = 0;
 			for (ValueContext vc: dc.value_series().value()){
-				curr += Long.parseLong(vc.NUMBER().getText());
+				curr += Double.parseDouble(vc.NUMBER().getText());
 				if (r < curr){
 					return vc.TERM().getText();
 				}

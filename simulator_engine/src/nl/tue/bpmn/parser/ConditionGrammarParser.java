@@ -1,4 +1,4 @@
-// Generated from ConditionGrammar.g4 by ANTLR 4.7
+// Generated from ConditionGrammar.g4 by ANTLR 4.4
 
     package nl.tue.bpmn.parser;
 
@@ -13,14 +13,18 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class ConditionGrammarParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.7", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.4", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
+		T__8=1, T__7=2, T__6=3, T__5=4, T__4=5, T__3=6, T__2=7, T__1=8, T__0=9, 
 		DATA_ITEM=10, NOMINAL_VALUE=11, COMPARATOR=12, NUMBER=13, WS=14;
+	public static final String[] tokenNames = {
+		"<INVALID>", "'OR'", "'IN'", "'('", "')'", "'{'", "'AND'", "','", "'}'", 
+		"'NOT'", "DATA_ITEM", "NOMINAL_VALUE", "COMPARATOR", "NUMBER", "WS"
+	};
 	public static final int
 		RULE_condition = 0, RULE_or_term = 1, RULE_and_term = 2, RULE_basic_condition = 3, 
 		RULE_nominal_condition = 4, RULE_numeric_condition = 5;
@@ -29,48 +33,11 @@ public class ConditionGrammarParser extends Parser {
 		"numeric_condition"
 	};
 
-	private static final String[] _LITERAL_NAMES = {
-		null, "'OR'", "'AND'", "'NOT'", "'('", "')'", "'IN'", "'{'", "','", "'}'"
-	};
-	private static final String[] _SYMBOLIC_NAMES = {
-		null, null, null, null, null, null, null, null, null, null, "DATA_ITEM", 
-		"NOMINAL_VALUE", "COMPARATOR", "NUMBER", "WS"
-	};
-	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
-
-	/**
-	 * @deprecated Use {@link #VOCABULARY} instead.
-	 */
-	@Deprecated
-	public static final String[] tokenNames;
-	static {
-		tokenNames = new String[_SYMBOLIC_NAMES.length];
-		for (int i = 0; i < tokenNames.length; i++) {
-			tokenNames[i] = VOCABULARY.getLiteralName(i);
-			if (tokenNames[i] == null) {
-				tokenNames[i] = VOCABULARY.getSymbolicName(i);
-			}
-
-			if (tokenNames[i] == null) {
-				tokenNames[i] = "<INVALID>";
-			}
-		}
-	}
-
-	@Override
-	@Deprecated
-	public String[] getTokenNames() {
-		return tokenNames;
-	}
-
-	@Override
-
-	public Vocabulary getVocabulary() {
-		return VOCABULARY;
-	}
-
 	@Override
 	public String getGrammarFileName() { return "ConditionGrammar.g4"; }
+
+	@Override
+	public String[] getTokenNames() { return tokenNames; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -113,18 +80,15 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(12);
-			or_term();
+			setState(12); or_term();
 			setState(17);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==T__0) {
+			while (_la==T__8) {
 				{
 				{
-				setState(13);
-				match(T__0);
-				setState(14);
-				or_term();
+				setState(13); match(T__8);
+				setState(14); or_term();
 				}
 				}
 				setState(19);
@@ -145,11 +109,11 @@ public class ConditionGrammarParser extends Parser {
 	}
 
 	public static class Or_termContext extends ParserRuleContext {
-		public List<And_termContext> and_term() {
-			return getRuleContexts(And_termContext.class);
-		}
 		public And_termContext and_term(int i) {
 			return getRuleContext(And_termContext.class,i);
+		}
+		public List<And_termContext> and_term() {
+			return getRuleContexts(And_termContext.class);
 		}
 		public Or_termContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -172,18 +136,15 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(20);
-			and_term();
+			setState(20); and_term();
 			setState(25);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==T__1) {
+			while (_la==T__3) {
 				{
 				{
-				setState(21);
-				match(T__1);
-				setState(22);
-				and_term();
+				setState(21); match(T__3);
+				setState(22); and_term();
 				}
 				}
 				setState(27);
@@ -229,33 +190,26 @@ public class ConditionGrammarParser extends Parser {
 		enterRule(_localctx, 4, RULE_and_term);
 		try {
 			setState(35);
-			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case DATA_ITEM:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(28);
-				basic_condition();
+				setState(28); basic_condition();
 				}
 				break;
-			case T__2:
+			case T__0:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(29);
-				match(T__2);
-				setState(30);
-				basic_condition();
+				setState(29); match(T__0);
+				setState(30); basic_condition();
 				}
 				break;
-			case T__3:
+			case T__6:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(31);
-				match(T__3);
-				setState(32);
-				condition();
-				setState(33);
-				match(T__4);
+				setState(31); match(T__6);
+				setState(32); condition();
+				setState(33); match(T__5);
 				}
 				break;
 			default:
@@ -299,20 +253,17 @@ public class ConditionGrammarParser extends Parser {
 		enterRule(_localctx, 6, RULE_basic_condition);
 		try {
 			setState(39);
-			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(37);
-				nominal_condition();
+				setState(37); nominal_condition();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(38);
-				numeric_condition();
+				setState(38); numeric_condition();
 				}
 				break;
 			}
@@ -330,10 +281,10 @@ public class ConditionGrammarParser extends Parser {
 
 	public static class Nominal_conditionContext extends ParserRuleContext {
 		public TerminalNode DATA_ITEM() { return getToken(ConditionGrammarParser.DATA_ITEM, 0); }
-		public List<TerminalNode> NOMINAL_VALUE() { return getTokens(ConditionGrammarParser.NOMINAL_VALUE); }
 		public TerminalNode NOMINAL_VALUE(int i) {
 			return getToken(ConditionGrammarParser.NOMINAL_VALUE, i);
 		}
+		public List<TerminalNode> NOMINAL_VALUE() { return getTokens(ConditionGrammarParser.NOMINAL_VALUE); }
 		public Nominal_conditionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -355,32 +306,25 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(41);
-			match(DATA_ITEM);
-			setState(42);
-			match(T__5);
-			setState(43);
-			match(T__6);
-			setState(44);
-			match(NOMINAL_VALUE);
+			setState(41); match(DATA_ITEM);
+			setState(42); match(T__7);
+			setState(43); match(T__4);
+			setState(44); match(NOMINAL_VALUE);
 			setState(49);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==T__7) {
+			while (_la==T__2) {
 				{
 				{
-				setState(45);
-				match(T__7);
-				setState(46);
-				match(NOMINAL_VALUE);
+				setState(45); match(T__2);
+				setState(46); match(NOMINAL_VALUE);
 				}
 				}
 				setState(51);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(52);
-			match(T__8);
+			setState(52); match(T__1);
 			}
 		}
 		catch (RecognitionException re) {
@@ -418,12 +362,9 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(54);
-			match(DATA_ITEM);
-			setState(55);
-			match(COMPARATOR);
-			setState(56);
-			match(NUMBER);
+			setState(54); match(DATA_ITEM);
+			setState(55); match(COMPARATOR);
+			setState(56); match(NUMBER);
 			}
 		}
 		catch (RecognitionException re) {
@@ -438,22 +379,22 @@ public class ConditionGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\20=\4\2\t\2\4\3\t"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\20=\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\3\2\3\2\7\2\22\n\2\f\2\16\2\25"+
 		"\13\2\3\3\3\3\3\3\7\3\32\n\3\f\3\16\3\35\13\3\3\4\3\4\3\4\3\4\3\4\3\4"+
 		"\3\4\5\4&\n\4\3\5\3\5\5\5*\n\5\3\6\3\6\3\6\3\6\3\6\3\6\7\6\62\n\6\f\6"+
-		"\16\6\65\13\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\2\2\b\2\4\6\b\n\f\2\2\2<\2\16"+
+		"\16\6\65\13\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\2\2\b\2\4\6\b\n\f\2\2<\2\16"+
 		"\3\2\2\2\4\26\3\2\2\2\6%\3\2\2\2\b)\3\2\2\2\n+\3\2\2\2\f8\3\2\2\2\16\23"+
 		"\5\4\3\2\17\20\7\3\2\2\20\22\5\4\3\2\21\17\3\2\2\2\22\25\3\2\2\2\23\21"+
 		"\3\2\2\2\23\24\3\2\2\2\24\3\3\2\2\2\25\23\3\2\2\2\26\33\5\6\4\2\27\30"+
-		"\7\4\2\2\30\32\5\6\4\2\31\27\3\2\2\2\32\35\3\2\2\2\33\31\3\2\2\2\33\34"+
-		"\3\2\2\2\34\5\3\2\2\2\35\33\3\2\2\2\36&\5\b\5\2\37 \7\5\2\2 &\5\b\5\2"+
-		"!\"\7\6\2\2\"#\5\2\2\2#$\7\7\2\2$&\3\2\2\2%\36\3\2\2\2%\37\3\2\2\2%!\3"+
+		"\7\b\2\2\30\32\5\6\4\2\31\27\3\2\2\2\32\35\3\2\2\2\33\31\3\2\2\2\33\34"+
+		"\3\2\2\2\34\5\3\2\2\2\35\33\3\2\2\2\36&\5\b\5\2\37 \7\13\2\2 &\5\b\5\2"+
+		"!\"\7\5\2\2\"#\5\2\2\2#$\7\6\2\2$&\3\2\2\2%\36\3\2\2\2%\37\3\2\2\2%!\3"+
 		"\2\2\2&\7\3\2\2\2\'*\5\n\6\2(*\5\f\7\2)\'\3\2\2\2)(\3\2\2\2*\t\3\2\2\2"+
-		"+,\7\f\2\2,-\7\b\2\2-.\7\t\2\2.\63\7\r\2\2/\60\7\n\2\2\60\62\7\r\2\2\61"+
+		"+,\7\f\2\2,-\7\4\2\2-.\7\7\2\2.\63\7\r\2\2/\60\7\t\2\2\60\62\7\r\2\2\61"+
 		"/\3\2\2\2\62\65\3\2\2\2\63\61\3\2\2\2\63\64\3\2\2\2\64\66\3\2\2\2\65\63"+
-		"\3\2\2\2\66\67\7\13\2\2\67\13\3\2\2\289\7\f\2\29:\7\16\2\2:;\7\17\2\2"+
-		";\r\3\2\2\2\7\23\33%)\63";
+		"\3\2\2\2\66\67\7\n\2\2\67\13\3\2\2\289\7\f\2\29:\7\16\2\2:;\7\17\2\2;"+
+		"\r\3\2\2\2\7\23\33%)\63";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

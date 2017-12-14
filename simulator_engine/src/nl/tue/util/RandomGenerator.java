@@ -12,11 +12,11 @@ public class RandomGenerator {
 	 * @param lambda the parameter of the exponential distribution
 	 * @return an exponentially distributed random number
 	 */
-	public static long generateExponential(long lambda){
+	public static double generateExponential(double lambda){
 		if (r == null){
-			r = new Random();
+			r = new Random(System.currentTimeMillis());
 		}
-		return (long) (Math.log(1.0 - Math.random())*-((double)lambda));
+		return Math.log(1.0 - Math.random())*(-1.0/lambda);
 	}
 	
 	/**
@@ -27,11 +27,11 @@ public class RandomGenerator {
 	 * @param sigma the sigma of the normal distribution
 	 * @return a positive normally distributed random number
 	 */
-	public static long generateNormal(long mu, long sigma){
+	public static double generateNormal(double mu, double sigma){
 		if (r == null){
-			r = new Random();
+			r = new Random(System.currentTimeMillis());
 		}		
-		long result = (long) (((double)sigma) * r.nextGaussian() + ((double)mu));		
+		double result = sigma * r.nextGaussian() + mu;		
 		return (result >= 0)?result:0;
 	}
 	
@@ -41,10 +41,10 @@ public class RandomGenerator {
 	 * @param max the max value of the returned number (exclusive)
 	 * @return a uniformly distributed random number
 	 */
-	public static long generateUniform(long max){
+	public static double generateUniform(double max){
 		if (r == null){
-			r = new Random();
+			r = new Random(System.currentTimeMillis());
 		}		
-		return (long) (r.nextDouble() * ((double) max));
+		return r.nextDouble() * max;
 	}
 }

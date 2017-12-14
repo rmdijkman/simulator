@@ -1,9 +1,10 @@
-// Generated from DistributionGrammar.g4 by ANTLR 4.7
+// Generated from DistributionGrammar.g4 by ANTLR 4.4
 
     package nl.tue.bpmn.parser;
 
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -18,60 +19,60 @@ public class DistributionGrammarBaseListener implements DistributionGrammarListe
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDistribution(DistributionGrammarParser.DistributionContext ctx) { }
+	@Override public void enterValue_series(@NotNull DistributionGrammarParser.Value_seriesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDistribution(DistributionGrammarParser.DistributionContext ctx) { }
+	@Override public void exitValue_series(@NotNull DistributionGrammarParser.Value_seriesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValue_series(DistributionGrammarParser.Value_seriesContext ctx) { }
+	@Override public void enterDistribution(@NotNull DistributionGrammarParser.DistributionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitValue_series(DistributionGrammarParser.Value_seriesContext ctx) { }
+	@Override public void exitDistribution(@NotNull DistributionGrammarParser.DistributionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValue(DistributionGrammarParser.ValueContext ctx) { }
+	@Override public void enterValue(@NotNull DistributionGrammarParser.ValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitValue(DistributionGrammarParser.ValueContext ctx) { }
+	@Override public void exitValue(@NotNull DistributionGrammarParser.ValueContext ctx) { }
 
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEveryRule(ParserRuleContext ctx) { }
+	@Override public void enterEveryRule(@NotNull ParserRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEveryRule(ParserRuleContext ctx) { }
+	@Override public void exitEveryRule(@NotNull ParserRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void visitTerminal(TerminalNode node) { }
+	@Override public void visitTerminal(@NotNull TerminalNode node) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void visitErrorNode(ErrorNode node) { }
+	@Override public void visitErrorNode(@NotNull ErrorNode node) { }
 }
