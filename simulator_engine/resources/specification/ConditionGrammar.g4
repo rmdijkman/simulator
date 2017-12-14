@@ -12,6 +12,6 @@ numeric_condition	: DATA_ITEM COMPARATOR NUMBER ;
 DATA_ITEM			: [A-Z][a-zA-Z]* ;
 NOMINAL_VALUE		: [a-z][a-zA-Z]* ;
 COMPARATOR			: '>' | '<' | '=' | '>=' | '<=' ;
-NUMBER				: [0-9]+ ;
+NUMBER				: [0-9]+('.'[0-9]+)?;
 
 WS : [ \t\r\n]+ -> skip ; // skip spaces, tabs, newlines
