@@ -37,7 +37,6 @@ For the activities in the model the following parameters can be provided in the 
 
 If there are XOR splits in the model, the choice is made based upon data. In order to make this choice the inscriptions on the arc of the XOR split denotes the condition which determines if a case takes that branch in the model. Conditions are based on case attributes and have the following structure: Attribute [operator] value. The attribute is one of the case attributes defined in the case_attributes parameter on the pool level. The operator can be any of the following mathematical operators for comparison of a numerical value: =, >, <, >= or <=. If the comparison is of a nominal value the operator is IN and the value is a set of values: IN {type1,...,typeN}. Multiple conditions for one arc can be linked together by using logic AND or OR operators and if preceded by a NOT operator it becomes true if the complement of the condition is true. Conditions in linkage by logic AND or OR operators should be surrounded by round brackets to ensure proper evaluation.
 
-
 # Source
 
 The source consists of two (linked) Eclipse packages that can be imported into Eclipse from GitHub as a whole.
