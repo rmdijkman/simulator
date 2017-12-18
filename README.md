@@ -25,7 +25,7 @@ In the model several elements need specifications in order to make the model sui
 * **interarrival_time:** D(var)\
   For the start event a distribution is denoted by either the normal distribution: *N(mu,sigma)* or the exponential distribution: *exp(lambda)*.
 
-For the activities in the model the following parameters can be provided in the properties, only the processing time per activity is mandatory to provide:
+For the activities in the model the following parameters can be provided in the properties:
 * **processing_time:** D(var)\
   For each activity in the model the processing time should be provided. The distribution can be denoted by either the normal distribution: *N(mu,sigma)* or the exponential distribution: *exp(lambda)*.
 * **queueing_strategy:** [Strategy]\
