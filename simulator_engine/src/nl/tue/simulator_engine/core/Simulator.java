@@ -1,6 +1,7 @@
 package nl.tue.simulator_engine.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,31 +102,110 @@ public class Simulator {
 		result += tableRow(new String[]{"sojourn time", Util.round(soj[1],2).toString(), Util.round(soj[0],2) + "-" + Util.round(soj[2],2)}); 
 		result += tableRow(new String[]{"processing time", Util.round(pro[1],2).toString(), Util.round(pro[0],2) + "-" + Util.round(pro[2],2)}); 
 		result += tableRow(new String[]{"waiting time", Util.round(wai[1],2).toString(), Util.round(wai[0],2) + "-" + Util.round(wai[2],2)}); 
-		result += tableTail(); 
+		result += tableTail();
+		
+		result += overallTimeGraph(Util.round(wai[1],2),Util.round(pro[1],2));
 
 		result += "<h2>Activity details</h2>";
-		result += tableHead(new String[]{"activity", "mean processing time", "95% CI", "mean waiting time", "95% CI"});			
+		result += tableHead(new String[]{"activity", "mean processing time", "95% CI", "mean waiting time", "95% CI"});
+		String activityNames[] = new String[activityProcessingTimes.size()];
+		double values[] = new double[activityProcessingTimes.size()];
+		double errors[] = new double[activityProcessingTimes.size()];
+		int activityIndex = 0;
 		for (Map.Entry<String, List<Double>> apt: activityProcessingTimes.entrySet()){
 			Double aPro[] = Util.lowerMeanUpper(apt.getValue());			
 			Double aWai[] = {0.0, 0.0, 0.0};
 			if (activityWaitingTimes.get(apt.getKey()) != null){
 				aWai = Util.lowerMeanUpper(activityWaitingTimes.get(apt.getKey()));
 			}
-			result += tableRow(new String[]{apt.getKey(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});  
+			result += tableRow(new String[]{apt.getKey(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});
+			activityNames[activityIndex] = apt.getKey();
+			values[activityIndex] = Util.round(aWai[1],2);
+			errors[activityIndex] = Util.round(aWai[1]-aWai[0],2);
+			activityIndex++;
 		}
 		result += tableTail();
+		result += waitingTimeGraph("waitingGraph", "waiting time", activityNames, values, errors);
 
 		result += "<h2>Resource details</h2>";
 		result += tableHead(new String[]{"resource type", "mean utilization rate", "95% CI"});			
+		String resourceNames[] = new String[resourceUtilizationRates.size()];
+		double rValues[] = new double[resourceUtilizationRates.size()];
+		double rErrors[] = new double[resourceUtilizationRates.size()];
+		int resourceIndex = 0;
 		for (Map.Entry<String, List<Double>> rur: resourceUtilizationRates.entrySet()){
 			Double uti[] = Util.lowerMeanUpper(rur.getValue());			
-			result += tableRow(new String[]{rur.getKey(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});  
+			result += tableRow(new String[]{rur.getKey(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});
+			resourceNames[resourceIndex] = rur.getKey();
+			rValues[resourceIndex] = Util.round(uti[1],2);
+			rErrors[resourceIndex] = Util.round(uti[1]-uti[0],2); 
+			resourceIndex++;
 		}
 		result += tableTail();
+		result += waitingTimeGraph("utilizationGraph", "utilization rate", resourceNames, rValues, rErrors);
 		
 		return result + documentTail();
 	}
 	
+	private static String overallTimeGraph(double waitingTime, double processingTime){
+		String result = "";
+		result += "<div id=\"timegraph\" style=\"width: 600px; height: 300px;\"></div>";
+
+		result += "<script>" +
+				"trace1 = {" +
+				"labels: ['waiting time', 'processing time']," + 
+				"marker: {line: {color: 'transparent'}}," + 
+				"type: 'pie'," +
+				"textinfo: 'value'," +
+				"values: ["+waitingTime+","+processingTime+"]" +
+				"};" +
+				"data = [trace1];" +
+				"layout = {hovermode: 'closest',margin: {r: 10,t: 25,b: 40,l: 60},showlegend: true};" +
+				"var configuration = {displayModeBar: false, displaylogo: false, showTips: true};" +
+				"Plotly.newPlot('timegraph', data, layout, configuration);";
+
+		result += "</script>";
+				
+		return result;
+
+	}
+	
+	private static String waitingTimeGraph(String uniqueId, String yAxisLabel, String labels[], double values[], double errors[]) {
+		String result = "";
+		result += "<div id=\""+uniqueId+"\" style=\"width: 100%; height: 500px;\"></div>";
+
+		result += "<script>" +
+				"var trace1 = {" +
+				"x: "+toString(labels)+"," +
+				"y: "+Arrays.toString(values)+"," +
+				"name: 'Control'," +
+				"error_y: {" +
+				"type: 'data'," +
+				"array: "+Arrays.toString(errors)+"," +
+				"visible: true" +
+				"}," +
+				"type: 'bar'" +
+				"};" +
+				"var data = [trace1];" +
+				"var layout = {barmode: 'group', yaxis: {title: '"+yAxisLabel+"'}};" +
+				"var configuration = {displayModeBar: false, displaylogo: false, showTips: true};" +
+				"Plotly.newPlot('"+uniqueId+"', data, layout, configuration);" +
+				"</script>";
+		
+		return result;
+	}
+	
+	public static String toString(String strings[]){
+		String result = "[";
+		for (int i = 0; i < strings.length; i++){
+			result += "'" + strings[i] + "'";
+			if (i < strings.length - 1){
+				result += ",";
+			}
+		}
+		return result + "]";
+	}
+
 	public static String documentHead(){
 		String result = "<!DOCTYPE html>"
 				+ "<html lang=\"en\">"
@@ -137,6 +217,7 @@ public class Simulator {
 				+ "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">"
 				+ "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js\"></script>"
 				+ "<script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>"
+				+ "<script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>"
 				+ "</head>"
 				+ ""
 				+ "<body>"
