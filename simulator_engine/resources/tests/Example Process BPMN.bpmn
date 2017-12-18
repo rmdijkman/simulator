@@ -10,7 +10,7 @@
       <participant id="sid-CF0AD195-F36A-481D-B066-80B6BC7BD7CC" name="The Random Insurance Company (RIC)" processRef="sid-964280C8-92CC-49F8-B436-C84D8E653A59">
          <documentation id="sid-ad10ee8e-b5ff-49a8-bd36-4f4a9d2a8eba">case_attributes: Amount: N(1000, 250) ; Risklevel: [{high, 10%}, {medium, 20%}, {low, 70%}]}]
 
-resource_types: Junior: 2; Senior: 1; Senior,Junior: 2
+resource_types: Junior: 3; Senior: 1; Senior,Junior: 2
 </documentation>
          <extensionElements>
             <signavio:signavioMetaData metaKey="bgcolor" metaValue="#ffffff"/>
