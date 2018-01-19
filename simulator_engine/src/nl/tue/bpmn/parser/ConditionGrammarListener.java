@@ -51,6 +51,16 @@ public interface ConditionGrammarListener extends ParseTreeListener {
 	 */
 	void exitBasic_condition(@NotNull ConditionGrammarParser.Basic_conditionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ConditionGrammarParser#percentage}.
+	 * @param ctx the parse tree
+	 */
+	void enterPercentage(@NotNull ConditionGrammarParser.PercentageContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConditionGrammarParser#percentage}.
+	 * @param ctx the parse tree
+	 */
+	void exitPercentage(@NotNull ConditionGrammarParser.PercentageContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ConditionGrammarParser#nominal_condition}.
 	 * @param ctx the parse tree
 	 */

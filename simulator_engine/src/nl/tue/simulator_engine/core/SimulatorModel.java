@@ -226,11 +226,13 @@ public class SimulatorModel extends Model{
 	 */
 	public ConditionEvaluator instantiateCase(){
 		ConditionEvaluator ce = new ConditionEvaluator();
-		for (String attribute: informationAttributes.split(";")){
-			int splitPoint = attribute.indexOf(':');
-			String attributeName = attribute.substring(0, splitPoint).trim();
-			String attributeDistribution = attribute.substring(splitPoint + 1);
-			ce.setVariableValue(attributeName, distributionEvaluator.evaluate(attributeDistribution));
+		if (informationAttributes.length() != 0) {
+			for (String attribute: informationAttributes.split(";")){
+				int splitPoint = attribute.indexOf(':');
+				String attributeName = attribute.substring(0, splitPoint).trim();
+				String attributeDistribution = attribute.substring(splitPoint + 1);
+				ce.setVariableValue(attributeName, distributionEvaluator.evaluate(attributeDistribution));
+			}
 		}
 		return ce;
 	}

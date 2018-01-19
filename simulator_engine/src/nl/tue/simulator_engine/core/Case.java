@@ -1,7 +1,9 @@
 package nl.tue.simulator_engine.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import nl.tue.bpmn.concepts.Node;
 import nl.tue.bpmn.concepts.ResourceType;
 import nl.tue.bpmn.concepts.Role;
 import nl.tue.bpmn.parser.ConditionEvaluator;
+import nl.tue.util.RandomGenerator;
 import nl.tue.bpmn.concepts.BPMNModel;
 
 public class Case extends SimProcess{
@@ -112,6 +115,33 @@ public class Case extends SimProcess{
 									x.setEnable(true);
 									gtw = true;
 									break;
+								}
+							}
+							//In case the outgoing arcs specify percentages rather than conditions
+							boolean percentages = true;
+							for (Arc a: n.getOutgoing()) {								
+								if (!a.getCondition().endsWith("%")) {
+									percentages = false;
+								}
+							}
+							if (percentages) {
+								Double randomNumber = RandomGenerator.generateUniform(100);
+								Double sum = 0.0;
+								Arc enabledArc = null;
+								for (Arc a: n.getOutgoing()) {
+									Double arcPercentage = Double.parseDouble(a.getCondition().substring(0, a.getCondition().length()-1));
+									sum += arcPercentage;
+									if (randomNumber <= sum) {
+										enabledArc = a;
+										break;
+									}
+								}
+								if (enabledArc != null) {
+									for(Arc i: n.getIncoming()){
+										i.setEnable(false);
+									}
+									enabledArc.setEnable(true);
+									gtw = true;									
 								}
 							}
 						}

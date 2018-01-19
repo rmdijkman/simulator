@@ -19,18 +19,19 @@ public class ConditionGrammarParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__8=1, T__7=2, T__6=3, T__5=4, T__4=5, T__3=6, T__2=7, T__1=8, T__0=9, 
-		DATA_ITEM=10, NOMINAL_VALUE=11, COMPARATOR=12, NUMBER=13, WS=14;
+		T__9=1, T__8=2, T__7=3, T__6=4, T__5=5, T__4=6, T__3=7, T__2=8, T__1=9, 
+		T__0=10, DATA_ITEM=11, NOMINAL_VALUE=12, COMPARATOR=13, NUMBER=14, WS=15;
 	public static final String[] tokenNames = {
-		"<INVALID>", "'OR'", "'IN'", "'('", "')'", "'{'", "'AND'", "','", "'}'", 
-		"'NOT'", "DATA_ITEM", "NOMINAL_VALUE", "COMPARATOR", "NUMBER", "WS"
+		"<INVALID>", "'OR'", "'%'", "'IN'", "'('", "')'", "'{'", "'AND'", "','", 
+		"'}'", "'NOT'", "DATA_ITEM", "NOMINAL_VALUE", "COMPARATOR", "NUMBER", 
+		"WS"
 	};
 	public static final int
 		RULE_condition = 0, RULE_or_term = 1, RULE_and_term = 2, RULE_basic_condition = 3, 
-		RULE_nominal_condition = 4, RULE_numeric_condition = 5;
+		RULE_nominal_condition = 4, RULE_numeric_condition = 5, RULE_percentage = 6;
 	public static final String[] ruleNames = {
 		"condition", "or_term", "and_term", "basic_condition", "nominal_condition", 
-		"numeric_condition"
+		"numeric_condition", "percentage"
 	};
 
 	@Override
@@ -59,6 +60,9 @@ public class ConditionGrammarParser extends Parser {
 		public Or_termContext or_term(int i) {
 			return getRuleContext(Or_termContext.class,i);
 		}
+		public PercentageContext percentage() {
+			return getRuleContext(PercentageContext.class,0);
+		}
 		public ConditionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -78,23 +82,38 @@ public class ConditionGrammarParser extends Parser {
 		enterRule(_localctx, 0, RULE_condition);
 		int _la;
 		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(12); or_term();
-			setState(17);
-			_errHandler.sync(this);
-			_la = _input.LA(1);
-			while (_la==T__8) {
+			setState(23);
+			switch (_input.LA(1)) {
+			case NUMBER:
+				enterOuterAlt(_localctx, 1);
 				{
+				setState(14); percentage();
+				}
+				break;
+			case T__6:
+			case T__0:
+			case DATA_ITEM:
+				enterOuterAlt(_localctx, 2);
 				{
-				setState(13); match(T__8);
-				setState(14); or_term();
-				}
-				}
-				setState(19);
+				setState(15); or_term();
+				setState(20);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			}
+				while (_la==T__9) {
+					{
+					{
+					setState(16); match(T__9);
+					setState(17); or_term();
+					}
+					}
+					setState(22);
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+				}
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -136,18 +155,18 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(20); and_term();
-			setState(25);
+			setState(25); and_term();
+			setState(30);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==T__3) {
 				{
 				{
-				setState(21); match(T__3);
-				setState(22); and_term();
+				setState(26); match(T__3);
+				setState(27); and_term();
 				}
 				}
-				setState(27);
+				setState(32);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -189,27 +208,27 @@ public class ConditionGrammarParser extends Parser {
 		And_termContext _localctx = new And_termContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_and_term);
 		try {
-			setState(35);
+			setState(40);
 			switch (_input.LA(1)) {
 			case DATA_ITEM:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(28); basic_condition();
+				setState(33); basic_condition();
 				}
 				break;
 			case T__0:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(29); match(T__0);
-				setState(30); basic_condition();
+				setState(34); match(T__0);
+				setState(35); basic_condition();
 				}
 				break;
 			case T__6:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(31); match(T__6);
-				setState(32); condition();
-				setState(33); match(T__5);
+				setState(36); match(T__6);
+				setState(37); condition();
+				setState(38); match(T__5);
 				}
 				break;
 			default:
@@ -252,18 +271,18 @@ public class ConditionGrammarParser extends Parser {
 		Basic_conditionContext _localctx = new Basic_conditionContext(_ctx, getState());
 		enterRule(_localctx, 6, RULE_basic_condition);
 		try {
-			setState(39);
-			switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
+			setState(44);
+			switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(37); nominal_condition();
+				setState(42); nominal_condition();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(38); numeric_condition();
+				setState(43); numeric_condition();
 				}
 				break;
 			}
@@ -306,25 +325,25 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(41); match(DATA_ITEM);
-			setState(42); match(T__7);
-			setState(43); match(T__4);
-			setState(44); match(NOMINAL_VALUE);
-			setState(49);
+			setState(46); match(DATA_ITEM);
+			setState(47); match(T__7);
+			setState(48); match(T__4);
+			setState(49); match(NOMINAL_VALUE);
+			setState(54);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==T__2) {
 				{
 				{
-				setState(45); match(T__2);
-				setState(46); match(NOMINAL_VALUE);
+				setState(50); match(T__2);
+				setState(51); match(NOMINAL_VALUE);
 				}
 				}
-				setState(51);
+				setState(56);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(52); match(T__1);
+			setState(57); match(T__1);
 			}
 		}
 		catch (RecognitionException re) {
@@ -362,9 +381,46 @@ public class ConditionGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(54); match(DATA_ITEM);
-			setState(55); match(COMPARATOR);
-			setState(56); match(NUMBER);
+			setState(59); match(DATA_ITEM);
+			setState(60); match(COMPARATOR);
+			setState(61); match(NUMBER);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class PercentageContext extends ParserRuleContext {
+		public TerminalNode NUMBER() { return getToken(ConditionGrammarParser.NUMBER, 0); }
+		public PercentageContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_percentage; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConditionGrammarListener ) ((ConditionGrammarListener)listener).enterPercentage(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConditionGrammarListener ) ((ConditionGrammarListener)listener).exitPercentage(this);
+		}
+	}
+
+	public final PercentageContext percentage() throws RecognitionException {
+		PercentageContext _localctx = new PercentageContext(_ctx, getState());
+		enterRule(_localctx, 12, RULE_percentage);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(63); match(NUMBER);
+			setState(64); match(T__8);
 			}
 		}
 		catch (RecognitionException re) {
@@ -379,22 +435,23 @@ public class ConditionGrammarParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\20=\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\3\2\3\2\7\2\22\n\2\f\2\16\2\25"+
-		"\13\2\3\3\3\3\3\3\7\3\32\n\3\f\3\16\3\35\13\3\3\4\3\4\3\4\3\4\3\4\3\4"+
-		"\3\4\5\4&\n\4\3\5\3\5\5\5*\n\5\3\6\3\6\3\6\3\6\3\6\3\6\7\6\62\n\6\f\6"+
-		"\16\6\65\13\6\3\6\3\6\3\7\3\7\3\7\3\7\3\7\2\2\b\2\4\6\b\n\f\2\2<\2\16"+
-		"\3\2\2\2\4\26\3\2\2\2\6%\3\2\2\2\b)\3\2\2\2\n+\3\2\2\2\f8\3\2\2\2\16\23"+
-		"\5\4\3\2\17\20\7\3\2\2\20\22\5\4\3\2\21\17\3\2\2\2\22\25\3\2\2\2\23\21"+
-		"\3\2\2\2\23\24\3\2\2\2\24\3\3\2\2\2\25\23\3\2\2\2\26\33\5\6\4\2\27\30"+
-		"\7\b\2\2\30\32\5\6\4\2\31\27\3\2\2\2\32\35\3\2\2\2\33\31\3\2\2\2\33\34"+
-		"\3\2\2\2\34\5\3\2\2\2\35\33\3\2\2\2\36&\5\b\5\2\37 \7\13\2\2 &\5\b\5\2"+
-		"!\"\7\5\2\2\"#\5\2\2\2#$\7\6\2\2$&\3\2\2\2%\36\3\2\2\2%\37\3\2\2\2%!\3"+
-		"\2\2\2&\7\3\2\2\2\'*\5\n\6\2(*\5\f\7\2)\'\3\2\2\2)(\3\2\2\2*\t\3\2\2\2"+
-		"+,\7\f\2\2,-\7\4\2\2-.\7\7\2\2.\63\7\r\2\2/\60\7\t\2\2\60\62\7\r\2\2\61"+
-		"/\3\2\2\2\62\65\3\2\2\2\63\61\3\2\2\2\63\64\3\2\2\2\64\66\3\2\2\2\65\63"+
-		"\3\2\2\2\66\67\7\n\2\2\67\13\3\2\2\289\7\f\2\29:\7\16\2\2:;\7\17\2\2;"+
-		"\r\3\2\2\2\7\23\33%)\63";
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\21E\4\2\t\2\4\3\t"+
+		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\3\2\3\2\3\2\3\2\7\2\25\n\2"+
+		"\f\2\16\2\30\13\2\5\2\32\n\2\3\3\3\3\3\3\7\3\37\n\3\f\3\16\3\"\13\3\3"+
+		"\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4+\n\4\3\5\3\5\5\5/\n\5\3\6\3\6\3\6\3\6\3"+
+		"\6\3\6\7\6\67\n\6\f\6\16\6:\13\6\3\6\3\6\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3"+
+		"\b\2\2\t\2\4\6\b\n\f\16\2\2D\2\31\3\2\2\2\4\33\3\2\2\2\6*\3\2\2\2\b.\3"+
+		"\2\2\2\n\60\3\2\2\2\f=\3\2\2\2\16A\3\2\2\2\20\32\5\16\b\2\21\26\5\4\3"+
+		"\2\22\23\7\3\2\2\23\25\5\4\3\2\24\22\3\2\2\2\25\30\3\2\2\2\26\24\3\2\2"+
+		"\2\26\27\3\2\2\2\27\32\3\2\2\2\30\26\3\2\2\2\31\20\3\2\2\2\31\21\3\2\2"+
+		"\2\32\3\3\2\2\2\33 \5\6\4\2\34\35\7\t\2\2\35\37\5\6\4\2\36\34\3\2\2\2"+
+		"\37\"\3\2\2\2 \36\3\2\2\2 !\3\2\2\2!\5\3\2\2\2\" \3\2\2\2#+\5\b\5\2$%"+
+		"\7\f\2\2%+\5\b\5\2&\'\7\6\2\2\'(\5\2\2\2()\7\7\2\2)+\3\2\2\2*#\3\2\2\2"+
+		"*$\3\2\2\2*&\3\2\2\2+\7\3\2\2\2,/\5\n\6\2-/\5\f\7\2.,\3\2\2\2.-\3\2\2"+
+		"\2/\t\3\2\2\2\60\61\7\r\2\2\61\62\7\5\2\2\62\63\7\b\2\2\638\7\16\2\2\64"+
+		"\65\7\n\2\2\65\67\7\16\2\2\66\64\3\2\2\2\67:\3\2\2\28\66\3\2\2\289\3\2"+
+		"\2\29;\3\2\2\2:8\3\2\2\2;<\7\13\2\2<\13\3\2\2\2=>\7\r\2\2>?\7\17\2\2?"+
+		"@\7\20\2\2@\r\3\2\2\2AB\7\20\2\2BC\7\4\2\2C\17\3\2\2\2\b\26\31 *.8";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

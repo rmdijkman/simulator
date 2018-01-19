@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -399,34 +401,36 @@ public class BPMNParser extends DefaultHandler{
 			}
 			
 		}
-		for (String resourceType: resourceTypesBeingParsed.split(";")){
-			int splitPoint = resourceType.indexOf(':');
-			if (splitPoint < 0){
-				errors.add("The following resource type does not contain ':' '" + resourceType + "'");
-			}else if (splitPoint+1 >= resourceType.length()){
-				errors.add("The following resource type only has a ':' at the end, so no number of resources was found '" + resourceType + "'");				
-			}
-			String name = resourceType.substring(0, splitPoint).trim();
-			String number = resourceType.substring(splitPoint + 1).trim();			
-			ResourceType rt = new ResourceType();
-			rt.setName(name);
-			try{
-				rt.setNumber(Integer.parseInt(number));
-			}catch (Exception e){
-				errors.add("The following resource type has an incorrectly formatted number of resources '" + resourceType + "'");								
-			}
-			for (String role: name.split(",")){
-				Role r = result.roleByName(role);
-				if (r == null){
-					errors.add("The following resource type specifies a role '" + role + "' that does not exist '" + resourceType + "'");													
-				}else{
-					rt.addRole(r);
+		if (resourceTypesBeingParsed != null) {
+			for (String resourceType: resourceTypesBeingParsed.split(";")){
+				int splitPoint = resourceType.indexOf(':');
+				if (splitPoint < 0){
+					errors.add("The following resource type does not contain ':' '" + resourceType + "'");
+				}else if (splitPoint+1 >= resourceType.length()){
+					errors.add("The following resource type only has a ':' at the end, so no number of resources was found '" + resourceType + "'");				
 				}
-			}
-			if (rt.getRoles().size() == 0){
-				errors.add("The following resource type specifies no roles '" + resourceType + "'");												
-			}else{
-				result.addResourceType(rt);
+				String name = resourceType.substring(0, splitPoint).trim();
+				String number = resourceType.substring(splitPoint + 1).trim();			
+				ResourceType rt = new ResourceType();
+				rt.setName(name);
+				try{
+					rt.setNumber(Integer.parseInt(number));
+				}catch (Exception e){
+					errors.add("The following resource type has an incorrectly formatted number of resources '" + resourceType + "'");								
+				}
+				for (String role: name.split(",")){
+					Role r = result.roleByName(role);
+					if (r == null){
+						errors.add("The following resource type specifies a role '" + role + "' that does not exist '" + resourceType + "'");													
+					}else{
+						rt.addRole(r);
+					}
+				}
+				if (rt.getRoles().size() == 0){
+					errors.add("The following resource type specifies no roles '" + resourceType + "'");												
+				}else{
+					result.addResourceType(rt);
+				}
 			}
 		}
 	}
@@ -443,7 +447,7 @@ public class BPMNParser extends DefaultHandler{
 	 */
 	private void checkSemantics() throws BPMNParseException{
 		if (result.getInformationAttributes() == null){
-			errors.add("The model has no information attributes specified.");
+			result.setInformationAttributes("");
 		}else{
 			List<String> parseErrors = caseAttributesCorrect(result.getInformationAttributes());
 			if (!parseErrors.isEmpty()){
@@ -451,7 +455,18 @@ public class BPMNParser extends DefaultHandler{
 			}			
 		}
 		if (result.getResourceTypes() == null){
-			errors.add("The model has no resource types specified.");
+			for (Role r: result.getRoles()) {
+				ResourceType rt = new ResourceType();
+				rt.setName(r.getName());
+				rt.addRole(r);
+			    Pattern p = Pattern.compile("\\((\\d+)\\)");
+			    Matcher m = p.matcher(r.getName());
+			    if (m.find()) {
+			    	rt.setNumber(Integer.parseInt(m.group(1)));
+			    }else {
+			    	rt.setNumber(1);
+			    }
+			}
 		}
 		if (result.getRoles().size() == 0){
 			errors.add("The model has no roles.");

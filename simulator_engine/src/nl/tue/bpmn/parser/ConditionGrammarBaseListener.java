@@ -67,6 +67,18 @@ public class ConditionGrammarBaseListener implements ConditionGrammarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterPercentage(@NotNull ConditionGrammarParser.PercentageContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPercentage(@NotNull ConditionGrammarParser.PercentageContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNominal_condition(@NotNull ConditionGrammarParser.Nominal_conditionContext ctx) { }
 	/**
 	 * {@inheritDoc}

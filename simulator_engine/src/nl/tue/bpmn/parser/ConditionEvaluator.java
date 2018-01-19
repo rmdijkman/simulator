@@ -36,12 +36,14 @@ public class ConditionEvaluator {
 	}
 	
 	private Boolean evaluate(ConditionContext condition) {
-		for (Or_termContext otc: condition.or_term()){
-			Boolean sub = evaluate(otc); 
-			if (sub == null){
-				return null;
-			}else if (sub){
-				return true;
+		if (condition.or_term() != null) {
+			for (Or_termContext otc: condition.or_term()){
+				Boolean sub = evaluate(otc); 
+				if (sub == null){
+					return null;
+				}else if (sub){
+					return true;
+				}
 			}
 		}
 		return false;
