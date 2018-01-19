@@ -1,8 +1,6 @@
 package nl.tue.bpmn.parser;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -553,11 +551,11 @@ public class BPMNParser extends DefaultHandler{
 	    
 	    try{
 			Source[] BPMN_XSD = new Source[5];
-			BPMN_XSD[0] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/BPMN20.xsd").toURI()).toString());
-			BPMN_XSD[1] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/BPMNDI.xsd").toURI()).toString());
-			BPMN_XSD[2] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/DC.xsd").toURI()).toString());
-			BPMN_XSD[3] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/DI.xsd").toURI()).toString());
-			BPMN_XSD[4] = new StreamSource(Paths.get(BPMNParser.class.getResource("/nl/tue/bpmn/specification/Semantic.xsd").toURI()).toString());
+			BPMN_XSD[0] = new StreamSource(BPMNParser.class.getResource("/nl/tue/bpmn/specification/BPMN20.xsd").toExternalForm());
+			BPMN_XSD[1] = new StreamSource(BPMNParser.class.getResource("/nl/tue/bpmn/specification/BPMNDI.xsd").toExternalForm());
+			BPMN_XSD[2] = new StreamSource(BPMNParser.class.getResource("/nl/tue/bpmn/specification/DC.xsd").toExternalForm());
+			BPMN_XSD[3] = new StreamSource(BPMNParser.class.getResource("/nl/tue/bpmn/specification/DI.xsd").toExternalForm());
+			BPMN_XSD[4] = new StreamSource(BPMNParser.class.getResource("/nl/tue/bpmn/specification/Semantic.xsd").toExternalForm());
 
 	    	SAXParser saxParser = spf.newSAXParser();
 	    	SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -573,9 +571,6 @@ public class BPMNParser extends DefaultHandler{
 	    		xmlReader.parse(fileName);
 	    	}
 	    }catch (SAXException e){
-	    	result = null;
-	    	throw new BPMNParseException("An unexpected error occurred while reading the BPMN file '" + fileName + "'.", e);
-	    }catch (URISyntaxException e){
 	    	result = null;
 	    	throw new BPMNParseException("An unexpected error occurred while reading the BPMN file '" + fileName + "'.", e);
 	    }catch (ParserConfigurationException e){

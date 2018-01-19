@@ -53,8 +53,9 @@ public class EditorView extends JPanel implements ActionListener {
 		JButton btnFile = new JButton("...");
 		btnFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				controller.fileChanged();
-				selectFile();
+				if (selectFile()){
+					controller.fileChanged();					
+				}
 			}
 		});
 		btnFile.setBounds(450, 48, 32, 28);
@@ -117,6 +118,7 @@ public class EditorView extends JPanel implements ActionListener {
 		if (returnVal == JFileChooser.APPROVE_OPTION){
 			selectedFile = fc.getSelectedFile().getAbsolutePath();
 			txtFile.setText(fc.getSelectedFile().getName());
+			Environment.getProperties().setLastFolder(fc.getSelectedFile().getParent());
 			return true;
 		}
 		return false;
