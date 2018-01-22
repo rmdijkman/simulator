@@ -104,4 +104,41 @@ public class Node {
 		this.stractDependency = stractDependency;
 	}
 
+	@Override
+	public String toString() {
+		String result = ""; 
+		switch (getType()){
+		case Task:
+			result += "Task("+getName()+")";
+			break;
+		case Gateway:					
+			switch (getTypeGtw()){
+			case ParSplit:
+				result += "Parallel Split";
+				break;
+			case ParJoin:
+				result += "Parallel Join";
+				break;
+			case XSplit:
+				result += "Exclusive Split";
+				break;
+			case XJoin:
+				result += "Exclusive Join";
+				break;
+			default:							
+				break;
+			}
+			break;
+		case Event:
+			if (getIncoming().size() == 0){
+				result += "Start Event";
+			}else if (getOutgoing().size() == 0){
+				result += "End Event";						
+			}					
+			break;
+		default:
+			break;
+		}
+		return result;
+	}
 }

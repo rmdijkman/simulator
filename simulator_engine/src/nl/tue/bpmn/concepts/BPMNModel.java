@@ -55,43 +55,11 @@ public class BPMNModel {
 		for (Role role: roles){
 			result += role.getName() + ":\n";
 			for (Node node: role.getContainedNodes()){
-				result += "\t" + node.hashCode();
-				switch (node.getType()){
-				case Task:
-					result += ": Task\n";
-					break;
-				case Gateway:					
-					switch (node.getTypeGtw()){
-					case ParSplit:
-						result += ": Parallel Split\n";
-						break;
-					case ParJoin:
-						result += ": Parallel Join\n";
-						break;
-					case XSplit:
-						result += ": Exclusive Split\n";
-						break;
-					case XJoin:
-						result += ": Exclusive Join\n";
-						break;
-					default:							
-						break;
-					}
-					break;
-				case Event:
-					if (node.getIncoming().size() == 0){
-						result += ": Start Event\n";
-					}else if (node.getOutgoing().size() == 0){
-						result += ": End Event\n";						
-					}					
-					break;
-				default:
-					break;
-				}
+				result += "\t" + node.toString() + "\n";
 			}
 		}
 		for (Arc arc: arcs){
-			result += arc.getSource().hashCode() + " -> " + arc.getTarget().hashCode() + "\n";
+			result += arc.getSource().toString() + " -> " + arc.getTarget().toString() + "\n";
 		}
 		return result;
 	}

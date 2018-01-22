@@ -27,14 +27,40 @@ public class QueueingNetwork {
 		for (Node a: bpmnModel.getNodes()) {
 			if ((a.getType() == Type.Task) || (a.getType() == Type.Event)) {
 				for (Node b: bpmnModel.getNodes()) {
-					if ((a.getType() == Type.Task) || (a.getType() == Type.Event)) {
+					if ((b.getType() == Type.Task) || (b.getType() == Type.Event)) {
 						if (taskFlow.get(a.getName()) == null) {
 							taskFlow.put(a.getName(), new HashMap<String,Double>());
 						}
-						taskFlow.get(a.getName()).put(b.getName(), pathProbability(a, b, new HashSet<Node>(), 1.0));					
+						if (taskFlowR.get(b.getName()) == null) {
+							taskFlowR.put(b.getName(), new HashMap<String,Double>());
+						}
+						double probability = pathProbability(a, b, new HashSet<Node>());
+						if ((taskFlow.get(a.getName()).get(b.getName()) != null) && (taskFlow.get(a.getName()).get(b.getName()) < probability) && !b.getName().equals("END")) {
+							throw new Exception("ERROR: it should not be possible to have multiple paths - consisting only of control nodes - between two nodes.");
+						}
+						if ((taskFlow.get(a.getName()).get(b.getName()) == null) || (taskFlow.get(a.getName()).get(b.getName()) < probability)) { 
+							taskFlow.get(a.getName()).put(b.getName(), probability);					
+							taskFlowR.get(b.getName()).put(a.getName(), probability);
+						}
 					}				
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Returns the probability that, when a case has executed the node with label 'from',
+	 * the next node to execute is the node with label 'to'.
+	 * 
+	 * @param from the label of the node to compute the probability from
+	 * @param to the label of the node to compute the probability to
+	 * @return a probability or null if either one of (the labels of) the nodes cannot be found
+	 */
+	public Double probability(String from, String to) {
+		if (taskFlow.get(from) == null) {
+			return null;
+		} else {
+			return taskFlow.get(from).get(to);
 		}
 	}
 	
@@ -73,21 +99,27 @@ public class QueueingNetwork {
 		}		
 	}
 	
-	private Double pathProbability(Node a, Node b, Set<Node> visitedNodes, Double intermediateProbability) throws Exception {
+	private Double pathProbability(Node a, Node b, Set<Node> visitedGateways) throws Exception {
 		for (Arc arc: a.getOutgoing()) {
-			double transitionProbability = intermediateProbability;
+			double transitionProbability = 1.0; //If there is no annotation on the arc, we assume a probability of 1.0
 			if ((arc.getCondition() != null) && (arc.getCondition().endsWith("%"))) {
-				transitionProbability *= Double.parseDouble(arc.getCondition().substring(0, arc.getCondition().length()-1));
+				transitionProbability *= Double.parseDouble(arc.getCondition().substring(0, arc.getCondition().length()-1))/100;
 			}
 			if (arc.getTarget().equals(b)) {
 				return transitionProbability;
-			}else if (visitedNodes.contains(arc.getTarget())) {
-				throw new Exception("ERROR: queueing models can only be used in BPMN models that do not have loops that contain no tasks.");
+			}else if (visitedGateways.contains(arc.getTarget())) {
+				//This is to prevent infinite loops
+				throw new Exception("ERROR: queueing models cannot be used in BPMN models that have loops with only control nodes.");
 			}else if (arc.getTarget().getType() == Type.Gateway) {
-				
-			}else{
-				return 0.0;
+				if (a.getType() == Type.Gateway) {
+					visitedGateways.add(a);
+				}
+				double followupProbability = pathProbability(arc.getTarget(), b, visitedGateways);
+				if (followupProbability > 0.0) {
+					return transitionProbability * followupProbability;
+				}
 			}
 		}
+		return 0.0;
 	}
 }

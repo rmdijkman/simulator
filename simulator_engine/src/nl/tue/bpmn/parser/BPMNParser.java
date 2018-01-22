@@ -138,6 +138,9 @@ public class BPMNParser extends DefaultHandler{
 			if ((name == null) || (name.length() == 0)){
 				errors.add("The model contains a task that has no name.");
 			}
+			if (name.equals("START") || name.equals("END")) {
+				errors.add("For the simulator to work, there should not be tasks labelled START or END.");				
+			}
 			nodeBeingParsed = new Node(name, Type.Task, TypeGtw.None);
 			result.addNode(nodeBeingParsed);
 			id2node.put(id, nodeBeingParsed);
@@ -452,7 +455,7 @@ public class BPMNParser extends DefaultHandler{
 				errors.add("The case attributes are not formatted correctly: " + String.join(",", parseErrors));						
 			}			
 		}
-		if (result.getResourceTypes() == null){
+		if (result.getResourceTypes().size() == 0){
 			for (Role r: result.getRoles()) {
 				ResourceType rt = new ResourceType();
 				rt.setName(r.getName());
@@ -464,6 +467,7 @@ public class BPMNParser extends DefaultHandler{
 			    }else {
 			    	rt.setNumber(1);
 			    }
+			    result.addResourceType(rt);
 			}
 		}
 		if (result.getRoles().size() == 0){
@@ -537,6 +541,12 @@ public class BPMNParser extends DefaultHandler{
 				if (node.getInterArrivalTimeDistribution() == null){
 					errors.add("The start event has no specified interarrival_time.");					
 				}
+				if (node.getName().length() == 0) {
+					node.setName("START"); //If the start event has no name, set 'START' as the default name
+				}
+			}
+			if ((node.getType() == Type.Event) && (node.getOutgoing().size() == 0) && (node.getName().length() == 0)){
+				node.setName("END"); //If an end event has no name, set 'END' as the default name				
 			}
 		}
 		if (!hasStart){
