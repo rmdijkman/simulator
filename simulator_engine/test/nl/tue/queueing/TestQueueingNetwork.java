@@ -69,7 +69,7 @@ public class TestQueueingNetwork {
 
 		System.out.println();
 		System.out.println("Double choice paths:");
-		System.out.print(qn.executionPathsToString());
+		System.out.println(qn.executionPathsToString());
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class TestQueueingNetwork {
 	
 		System.out.println();
 		System.out.println("Repeat loop paths:");
-		System.out.print(qn.executionPathsToString());
+		System.out.println(qn.executionPathsToString());
 	}
 
 	@Test
@@ -93,6 +93,30 @@ public class TestQueueingNetwork {
 	
 		System.out.println();
 		System.out.println("While loop paths:");
-		System.out.print(qn.executionPathsToString());
+		System.out.println(qn.executionPathsToString());
+	}
+
+	@Test
+	public void testNestedLoopPaths() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Nested Loop.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+	
+		System.out.println();
+		System.out.println("Nested loop paths:");
+		System.out.println(qn.executionPathsToString());
+	}
+
+	@Test
+	public void testLoopNestedChoicePaths() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Loop Nested Choice.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+	
+		System.out.println();
+		System.out.println("Loop nested choice paths:");
+		System.out.println(qn.executionPathsToString());
 	}
 }

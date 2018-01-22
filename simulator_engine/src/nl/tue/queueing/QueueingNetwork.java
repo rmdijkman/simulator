@@ -33,7 +33,7 @@ public class QueueingNetwork {
 
 	//The transition paths tree
 	private ExecutionNode executionTreeRoot;
-	private Map<Node,ExecutionNode> nodeToExecutionTreeNode;
+	private Map<Node,ExecutionNode> nodeToExecutionNode;
 	
 	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{
 		this.bpmnModel = bpmnModel;
@@ -68,8 +68,8 @@ public class QueueingNetwork {
 		}
 		
 		//Create the execution paths tree
-		nodeToExecutionTreeNode = new HashMap<Node,ExecutionNode>();
-		executionTreeRoot = createSubTree(bpmnModel.nodeByName("START"), null, 1.0);
+		nodeToExecutionNode = new HashMap<Node,ExecutionNode>();
+		executionTreeRoot = createSubTree(bpmnModel.nodeByName("START"), null);
 	}
 	
 	/**
@@ -94,22 +94,40 @@ public class QueueingNetwork {
 	 * @return a string representation of all possible execution paths through the model
 	 */
 	public String executionPathsToString() {
-		return executionPathsToString(executionTreeRoot, "");
+		return executionPathsToString(executionTreeRoot, null, "");
 	}
-	private String executionPathsToString(ExecutionNode forNode, String pathToNode) {
-		String pathToAndIncludingNode = forNode.forNode.getName();
-		if (forNode.startOfLoop) {
-			pathToAndIncludingNode = "BACKTO(" + forNode.forNode.getName() + ")";
+	private String executionPathsToString(ExecutionNode fromNode, Node toNode, String executionPathUntilNode) {
+		String pathToAndIncludingNode = "";
+		if (executionPathUntilNode.length() != 0) {
+			pathToAndIncludingNode += executionPathUntilNode + ((fromNode.forNode.getType() == Type.Task)?"-":""); 
 		}
-		if (pathToNode.length() != 0) {
-			pathToAndIncludingNode = pathToNode + "," + pathToAndIncludingNode;
+		if (fromNode.forNode.getType() == Type.Task) {
+			pathToAndIncludingNode += fromNode.forNode.getName();
 		}
-		if (forNode.children.isEmpty()) {
-			return pathToAndIncludingNode + "\n";
+		
+		//If we have reached the end of a loop
+		if ((toNode != null) && (fromNode.forNode == toNode)) {
+			return pathToAndIncludingNode;
 		}
+		
+		//If we have reached the end of the tree
+		if (fromNode.children.isEmpty()) {
+			return pathToAndIncludingNode + ";";
+		}
+		
+		//Create a loop for all loop children
+		List<String> loops = new ArrayList<String>();
+		for (ExecutionNode loop: fromNode.loops) {
+			loops.add("-LOOP(" + executionPathsToString(nodeToExecutionNode.get(loop.forNode), fromNode.forNode, "") + ")");
+		}
+		if (loops.isEmpty()) loops.add(""); //if there is no loop, don't loop
+		
+		//Recurse for all non-loop children, but insert the possibility to loop inbetween 
 		String result = "";
-		for (ExecutionNode child: forNode.children) {
-			result += executionPathsToString(child, pathToAndIncludingNode);
+		for (String loop: loops) {
+			for (ExecutionNode child: fromNode.children) {
+				result += executionPathsToString(child, toNode, pathToAndIncludingNode + loop);
+			}
 		}
 		return result;
 	}
@@ -173,26 +191,22 @@ public class QueueingNetwork {
 		return 0.0;
 	}
 	
-	private ExecutionNode createSubTree(Node forNode, ExecutionNode parent, Double probabilityToReach) {
-		ExecutionNode result = new ExecutionNode(forNode, parent, probabilityToReach);
-		nodeToExecutionTreeNode.put(forNode, result);
+	private ExecutionNode createSubTree(Node forNode, ExecutionNode parent) {
+		ExecutionNode result = new ExecutionNode(forNode, parent);
+		nodeToExecutionNode.put(forNode, result);
 		
 		//for each node n that is reachable through a transition (forNode, probability, n):
-		for (Map.Entry<String, Double> transition: taskFlow.get(forNode.getName()).entrySet()) {
-			//if the transition can be taken
-			if (transition.getValue() > 0) {
-				Node toNode = bpmnModel.nodeByName(transition.getKey());
-				if (!transition.getKey().equals("END") && (nodeToExecutionTreeNode.get(toNode) != null)) {
-					//if the node was already passed and it was not an end node, it marks a loop
-					result.children.add(new ExecutionNode(toNode, result, transition.getValue(), true));
-				} else {
-					//recurse by creating a subtree for the transition
-					//and add the created subtree to children
-					result.children.add(createSubTree(toNode, result, transition.getValue()));
-				}
+		for (Arc a: forNode.getOutgoing()) {
+			Node toNode = a.getTarget();
+			if (result.pathTo.contains(toNode)) {
+				//if the node was already passed and it was not an end node, it marks a loop
+				result.loops.add(new ExecutionNode(toNode, result));
+			} else {
+				//recurse by creating a subtree for the transition
+				//and add the created subtree to children
+				result.children.add(createSubTree(toNode, result));
 			}
-		}
-		
+		}		
 		return result;
 	}
 	
@@ -200,24 +214,29 @@ public class QueueingNetwork {
 	class ExecutionNode {
 		Node forNode;
 		ExecutionNode parent;
-		double probability; //the probability that this node is the next (among the children of its parent) to be taken
-		boolean startOfLoop; //true if the node is the start of a loop, in which case - when a path of one of its children ends - it is assumed to loop back to this node  
+		List<Node> pathTo;
 		List<ExecutionNode> children;
+		List<ExecutionNode> loops;
 		
-		ExecutionNode(Node forNode, ExecutionNode parent, double probability){
+		ExecutionNode(Node forNode, ExecutionNode parent){
 			this.forNode = forNode;
 			this.parent = parent;
-			this.probability = probability;
-			this.startOfLoop = false;
+			this.pathTo = new ArrayList<Node>();
+			if (parent != null) {
+				pathTo.addAll(parent.pathTo);
+			}
+			pathTo.add(forNode);
 			this.children = new ArrayList<ExecutionNode>();
-		}
+			this.loops = new ArrayList<ExecutionNode>();
+		}		
 		
-		ExecutionNode(Node forNode, ExecutionNode parent, double probability, boolean startOfLoop){
-			this.forNode = forNode;
-			this.parent = parent;
-			this.probability = probability;
-			this.startOfLoop = startOfLoop;
-			this.children = new ArrayList<ExecutionNode>();
+		@Override
+		public String toString() {
+			String result = "";
+			for (ExecutionNode child: children) {
+				result += child.forNode.toString() + ",";
+			}
+			return forNode.toString() + "(" + result + ")";
 		}
 	}
 }
