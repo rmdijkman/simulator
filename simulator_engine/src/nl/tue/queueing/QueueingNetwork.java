@@ -1,7 +1,9 @@
 package nl.tue.queueing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,15 +15,33 @@ import nl.tue.bpmn.concepts.Role;
 import nl.tue.bpmn.concepts.Type;
 import nl.tue.bpmn.concepts.TypeGtw;
 
+/**
+ *
+ * Pre-conditions:
+ * - only structured loops are allowed, i.e.: loops with a single entry and a single exit //TODO: add a check for that
+ * - no two tasks have the same name //TODO: add a check for that
+ * - no parallelism (this can possibly be 'fixed' by using interleaving; note that this requires that the previous constraint is lifted)
+ */
 public class QueueingNetwork {
-	
+
+	private BPMNModel bpmnModel;
+
+	//The direct successor and predecessor matrix for the bpmnModel
 	//Note that taskA below can also be the start event and taskB can also be an end event.
 	private Map<String,Map<String,Double>> taskFlow; //the transitions (taskA, taskB, probability), identified by taskA
 	private Map<String,Map<String,Double>> taskFlowR; //the transitions (taskA, taskB, probability), identified by taskB
+
+	//The transition paths tree
+	private ExecutionNode executionTreeRoot;
+	private Map<Node,ExecutionNode> nodeToExecutionTreeNode;
 	
 	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{
+		this.bpmnModel = bpmnModel;
+		
+		//Test more detailed syntax constraints
 		testSyntaxConstraints(bpmnModel);
 		
+		//Create the transition probability matrix
 		taskFlow = new HashMap<String,Map<String,Double>>();
 		taskFlowR = new HashMap<String,Map<String,Double>>();
 		for (Node a: bpmnModel.getNodes()) {
@@ -46,6 +66,10 @@ public class QueueingNetwork {
 				}
 			}
 		}
+		
+		//Create the execution paths tree
+		nodeToExecutionTreeNode = new HashMap<Node,ExecutionNode>();
+		executionTreeRoot = createSubTree(bpmnModel.nodeByName("START"), null, 1.0);
 	}
 	
 	/**
@@ -62,6 +86,32 @@ public class QueueingNetwork {
 		} else {
 			return taskFlow.get(from).get(to);
 		}
+	}
+	
+	/**
+	 * Returns a string representation of all possible execution paths through the model
+	 * 
+	 * @return a string representation of all possible execution paths through the model
+	 */
+	public String executionPathsToString() {
+		return executionPathsToString(executionTreeRoot, "");
+	}
+	private String executionPathsToString(ExecutionNode forNode, String pathToNode) {
+		String pathToAndIncludingNode = forNode.forNode.getName();
+		if (forNode.startOfLoop) {
+			pathToAndIncludingNode = "BACKTO(" + forNode.forNode.getName() + ")";
+		}
+		if (pathToNode.length() != 0) {
+			pathToAndIncludingNode = pathToNode + "," + pathToAndIncludingNode;
+		}
+		if (forNode.children.isEmpty()) {
+			return pathToAndIncludingNode + "\n";
+		}
+		String result = "";
+		for (ExecutionNode child: forNode.children) {
+			result += executionPathsToString(child, pathToAndIncludingNode);
+		}
+		return result;
 	}
 	
 	private void testSyntaxConstraints(BPMNModel bpmnModel) throws Exception{		
@@ -121,5 +171,53 @@ public class QueueingNetwork {
 			}
 		}
 		return 0.0;
+	}
+	
+	private ExecutionNode createSubTree(Node forNode, ExecutionNode parent, Double probabilityToReach) {
+		ExecutionNode result = new ExecutionNode(forNode, parent, probabilityToReach);
+		nodeToExecutionTreeNode.put(forNode, result);
+		
+		//for each node n that is reachable through a transition (forNode, probability, n):
+		for (Map.Entry<String, Double> transition: taskFlow.get(forNode.getName()).entrySet()) {
+			//if the transition can be taken
+			if (transition.getValue() > 0) {
+				Node toNode = bpmnModel.nodeByName(transition.getKey());
+				if (!transition.getKey().equals("END") && (nodeToExecutionTreeNode.get(toNode) != null)) {
+					//if the node was already passed and it was not an end node, it marks a loop
+					result.children.add(new ExecutionNode(toNode, result, transition.getValue(), true));
+				} else {
+					//recurse by creating a subtree for the transition
+					//and add the created subtree to children
+					result.children.add(createSubTree(toNode, result, transition.getValue()));
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	//represents a node in the tree that contains the paths from start to end
+	class ExecutionNode {
+		Node forNode;
+		ExecutionNode parent;
+		double probability; //the probability that this node is the next (among the children of its parent) to be taken
+		boolean startOfLoop; //true if the node is the start of a loop, in which case - when a path of one of its children ends - it is assumed to loop back to this node  
+		List<ExecutionNode> children;
+		
+		ExecutionNode(Node forNode, ExecutionNode parent, double probability){
+			this.forNode = forNode;
+			this.parent = parent;
+			this.probability = probability;
+			this.startOfLoop = false;
+			this.children = new ArrayList<ExecutionNode>();
+		}
+		
+		ExecutionNode(Node forNode, ExecutionNode parent, double probability, boolean startOfLoop){
+			this.forNode = forNode;
+			this.parent = parent;
+			this.probability = probability;
+			this.startOfLoop = startOfLoop;
+			this.children = new ArrayList<ExecutionNode>();
+		}
 	}
 }
