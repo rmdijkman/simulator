@@ -10,3 +10,7 @@
 /ConditionGrammarLexer.tokens
 /ConditionGrammarListener.java
 /ConditionGrammarParser.java
+/ConditionGrammar.interp
+/ConditionGrammarLexer.interp
+/DistributionGrammar.interp
+/DistributionGrammarLexer.interp
