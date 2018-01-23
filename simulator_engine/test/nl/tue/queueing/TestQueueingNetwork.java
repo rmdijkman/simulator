@@ -67,9 +67,7 @@ public class TestQueueingNetwork {
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 
-		System.out.println();
-		System.out.println("Double choice paths:");
-		System.out.println(qn.executionPathsToString());
+		assertEquals("START A CHOICE( END ; CHOICE( B END ; C END ) ) ", qn.executionPathsToString());
 	}
 
 	@Test
@@ -79,9 +77,7 @@ public class TestQueueingNetwork {
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 	
-		System.out.println();
-		System.out.println("Repeat loop paths:");
-		System.out.println(qn.executionPathsToString());
+		assertEquals("START A LOOP( A ) B END ", qn.executionPathsToString());
 	}
 
 	@Test
@@ -91,9 +87,7 @@ public class TestQueueingNetwork {
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 	
-		System.out.println();
-		System.out.println("While loop paths:");
-		System.out.println(qn.executionPathsToString());
+		assertEquals("START LOOP( A ) B END ", qn.executionPathsToString());
 	}
 
 	@Test
@@ -103,9 +97,7 @@ public class TestQueueingNetwork {
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 	
-		System.out.println();
-		System.out.println("Nested loop paths:");
-		System.out.println(qn.executionPathsToString());
+		assertEquals("START A B LOOP( B ) C LOOP( A B LOOP( B ) C ) END ", qn.executionPathsToString());
 	}
 
 	@Test
@@ -115,8 +107,6 @@ public class TestQueueingNetwork {
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 	
-		System.out.println();
-		System.out.println("Loop nested choice paths:");
-		System.out.println(qn.executionPathsToString());
+		assertEquals("START A CHOICE( B LOOP( A CHOICE( B ; C ) ) END ; C LOOP( A CHOICE( B ; C ) ) END ) ", qn.executionPathsToString());
 	}
 }

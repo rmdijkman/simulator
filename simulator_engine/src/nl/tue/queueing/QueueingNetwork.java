@@ -3,6 +3,7 @@ package nl.tue.queueing;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,15 +26,12 @@ import nl.tue.bpmn.concepts.TypeGtw;
 public class QueueingNetwork {
 
 	private BPMNModel bpmnModel;
+	private ExecutionNode executionTree;
 
 	//The direct successor and predecessor matrix for the bpmnModel
 	//Note that taskA below can also be the start event and taskB can also be an end event.
 	private Map<String,Map<String,Double>> taskFlow; //the transitions (taskA, taskB, probability), identified by taskA
 	private Map<String,Map<String,Double>> taskFlowR; //the transitions (taskA, taskB, probability), identified by taskB
-
-	//The transition paths tree
-	private ExecutionNode executionTreeRoot;
-	private Map<Node,ExecutionNode> nodeToExecutionNode;
 	
 	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{
 		this.bpmnModel = bpmnModel;
@@ -67,9 +65,8 @@ public class QueueingNetwork {
 			}
 		}
 		
-		//Create the execution paths tree
-		nodeToExecutionNode = new HashMap<Node,ExecutionNode>();
-		executionTreeRoot = createSubTree(bpmnModel.nodeByName("START"), null);
+		//Compute execution tree
+		executionTree = createExecutionTree(bpmnModel.nodeByName("START"), null, new ExecutionNode(null, false, false));
 	}
 	
 	/**
@@ -87,49 +84,107 @@ public class QueueingNetwork {
 			return taskFlow.get(from).get(to);
 		}
 	}
+
+	private ExecutionNode createExecutionTree(Node fromNode, Node toNode, ExecutionNode subTree) {
+		if ((fromNode.getType() == Type.Task) || (fromNode.getType() == Type.Event)){
+			subTree.children.add(new ExecutionNode(fromNode, false, false));
+		}
+		
+		//If we have reached the end of a loop: done creating execution path
+		if (fromNode == toNode) {
+			return subTree;
+		}
+		
+		//If we have reached the end of the tree: done creating execution path
+		if (fromNode.getOutgoing().isEmpty()) {
+			return subTree;
+		}
+		
+		//If the current node is an XOR-split: create a loop for each outgoing arc that starts a loop 
+		List<Arc> nonLoops = new ArrayList<Arc>();
+		for (Arc outgoing: fromNode.getOutgoing()) {
+			if (startsLoop(outgoing)) {
+				ExecutionNode loop = new ExecutionNode(fromNode, true, false);
+				subTree.children.add(loop);
+				createExecutionTree(outgoing.getTarget(), fromNode, loop);
+			} else {
+				nonLoops.add(outgoing);
+			}
+		}
+		
+		//Recurse for all non-loop children
+		//If it is a choice
+		if (nonLoops.size() > 1) {
+			ExecutionNode newSubTree = new ExecutionNode(fromNode, false, true);
+			subTree.children.add(newSubTree);
+			for (Arc outgoing: nonLoops) {				
+				newSubTree.children.add(createExecutionTree(outgoing.getTarget(), toNode, new ExecutionNode(null, false, false)));
+			}	
+			return newSubTree;
+		}else {
+			//If it is not a choice
+			for (Arc outgoing: nonLoops) {
+				createExecutionTree(outgoing.getTarget(), toNode, subTree);
+			}
+			return subTree;
+		}
+	}
+
 	
+	private String executionTreeToString(ExecutionNode tree) {
+		String result = "";
+		if (tree.isLoop) {
+			result += "LOOP( ";
+		}else if (tree.isChoice) {
+			result += "CHOICE( ";
+		}
+		if ((tree.node != null) && (tree.node.getName().length() > 0)) {
+			result += tree.node.getName();
+			result += " ";
+		}
+		for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+			ExecutionNode child = children.next();
+			result += executionTreeToString(child);
+			if (children.hasNext() && (tree.isChoice)) {
+				result += "; ";				
+			}
+		}
+		if (tree.isLoop || tree.isChoice) {
+			result += ") ";				
+		}
+		return result;
+	}
 	/**
 	 * Returns a string representation of all possible execution paths through the model
 	 * 
 	 * @return a string representation of all possible execution paths through the model
 	 */
 	public String executionPathsToString() {
-		return executionPathsToString(executionTreeRoot, null, "");
+		return executionTreeToString(executionTree);
 	}
-	private String executionPathsToString(ExecutionNode fromNode, Node toNode, String executionPathUntilNode) {
-		String pathToAndIncludingNode = "";
-		if (executionPathUntilNode.length() != 0) {
-			pathToAndIncludingNode += executionPathUntilNode + ((fromNode.forNode.getType() == Type.Task)?"-":""); 
+	
+	private boolean startsLoop(Arc a) {		
+		//the source of the arc is an XOR-split		
+		//the arc will always return on itself
+		return ((a.getSource().getType() == Type.Gateway) && (a.getSource().getTypeGtw() == TypeGtw.XSplit) && alwaysReturnsOn(a,a,new HashSet<Arc>())); 
+	}
+	private boolean alwaysReturnsOn(Arc a, Arc on, Set<Arc> visited) {		
+		if (a.getTarget().getOutgoing().contains(on)) {
+			return true;
 		}
-		if (fromNode.forNode.getType() == Type.Task) {
-			pathToAndIncludingNode += fromNode.forNode.getName();
+		if (a.getTarget().getOutgoing().isEmpty()) {
+			return false;
 		}
-		
-		//If we have reached the end of a loop
-		if ((toNode != null) && (fromNode.forNode == toNode)) {
-			return pathToAndIncludingNode;
+		if (visited.contains(a)) {
+			return true;
 		}
-		
-		//If we have reached the end of the tree
-		if (fromNode.children.isEmpty()) {
-			return pathToAndIncludingNode + ";";
+		visited.add(a);
+		boolean always = true;
+		for (Arc b: a.getTarget().getOutgoing()) {
+			always = alwaysReturnsOn(b, on, visited);
+			if (!always) break;
 		}
-		
-		//Create a loop for all loop children
-		List<String> loops = new ArrayList<String>();
-		for (ExecutionNode loop: fromNode.loops) {
-			loops.add("-LOOP(" + executionPathsToString(nodeToExecutionNode.get(loop.forNode), fromNode.forNode, "") + ")");
-		}
-		if (loops.isEmpty()) loops.add(""); //if there is no loop, don't loop
-		
-		//Recurse for all non-loop children, but insert the possibility to loop inbetween 
-		String result = "";
-		for (String loop: loops) {
-			for (ExecutionNode child: fromNode.children) {
-				result += executionPathsToString(child, toNode, pathToAndIncludingNode + loop);
-			}
-		}
-		return result;
+		return always;
 	}
 	
 	private void testSyntaxConstraints(BPMNModel bpmnModel) throws Exception{		
@@ -190,53 +245,18 @@ public class QueueingNetwork {
 		}
 		return 0.0;
 	}
-	
-	private ExecutionNode createSubTree(Node forNode, ExecutionNode parent) {
-		ExecutionNode result = new ExecutionNode(forNode, parent);
-		nodeToExecutionNode.put(forNode, result);
-		
-		//for each node n that is reachable through a transition (forNode, probability, n):
-		for (Arc a: forNode.getOutgoing()) {
-			Node toNode = a.getTarget();
-			if (result.pathTo.contains(toNode)) {
-				//if the node was already passed and it was not an end node, it marks a loop
-				result.loops.add(new ExecutionNode(toNode, result));
-			} else {
-				//recurse by creating a subtree for the transition
-				//and add the created subtree to children
-				result.children.add(createSubTree(toNode, result));
-			}
-		}		
-		return result;
-	}
-	
-	//represents a node in the tree that contains the paths from start to end
-	class ExecutionNode {
-		Node forNode;
-		ExecutionNode parent;
-		List<Node> pathTo;
+
+	class ExecutionNode {		
 		List<ExecutionNode> children;
-		List<ExecutionNode> loops;
+		Node node;
+		boolean isLoop;
+		boolean isChoice;
 		
-		ExecutionNode(Node forNode, ExecutionNode parent){
-			this.forNode = forNode;
-			this.parent = parent;
-			this.pathTo = new ArrayList<Node>();
-			if (parent != null) {
-				pathTo.addAll(parent.pathTo);
-			}
-			pathTo.add(forNode);
+		public ExecutionNode(Node node, boolean isLoop, boolean isChoice) {
 			this.children = new ArrayList<ExecutionNode>();
-			this.loops = new ArrayList<ExecutionNode>();
-		}		
-		
-		@Override
-		public String toString() {
-			String result = "";
-			for (ExecutionNode child: children) {
-				result += child.forNode.toString() + ",";
-			}
-			return forNode.toString() + "(" + result + ")";
+			this.node = node;
+			this.isLoop = isLoop;
+			this.isChoice = isChoice;
 		}
 	}
 }
