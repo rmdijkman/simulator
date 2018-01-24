@@ -15,34 +15,132 @@ import nl.tue.bpmn.concepts.ResourceType;
 import nl.tue.bpmn.concepts.Role;
 import nl.tue.bpmn.concepts.Type;
 import nl.tue.bpmn.concepts.TypeGtw;
+import nl.tue.bpmn.parser.DistributionEvaluator;
+import nl.tue.util.Matrix;
 
 /**
  *
  * Pre-conditions:
  * - only structured loops are allowed, i.e.: loops with a single entry and a single exit //TODO: add a check for that
- * - no two tasks have the same name //TODO: add a check for that
+ * - no two tasks have the same name //TODO: add a check for that (or lift this restriction, which should be possible)
  * - no parallelism (this can possibly be 'fixed' by using interleaving; note that this requires that the previous constraint is lifted)
  */
 public class QueueingNetwork {
 
-	private BPMNModel bpmnModel;
+	private List<String> tasks;
+	private double lambda;
+	private Map<String,Double> eBTask; //the expected processing time of each task
+	private Map<String,Double> eB2Task; //the expected processing time of each task
+	private Map<String,Double> lambdaTask; //the lambda of each task
+	
 	private ExecutionNode executionTree;
 
 	//The direct successor and predecessor matrix for the bpmnModel
-	//Note that taskA below can also be the start event and taskB can also be an end event.
-	private Map<String,Map<String,Double>> taskFlow; //the transitions (taskA, taskB, probability), identified by taskA
-	private Map<String,Map<String,Double>> taskFlowR; //the transitions (taskA, taskB, probability), identified by taskB
+	//elementA can be a task or start event, elementB can be a task or end event.
+	private Map<String,Map<String,Double>> taskFlow; //the transitions (elementA, elementB, probability), identified by elementA
+	private Map<String,Map<String,Double>> taskFlowR; //the transitions (elementA, elementB, probability), identified by elementB
 	
-	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{
-		this.bpmnModel = bpmnModel;
-		
+	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{		
 		//Test more detailed syntax constraints
 		testSyntaxConstraints(bpmnModel);
 		
-		//Create the transition probability matrix
+		//Create the adjacency matrix 
+		createAdjacencyMatrix(bpmnModel);
+		
+		//Compute execution tree
+		executionTree = createExecutionTree(bpmnModel.nodeByName("START"), null, new ExecutionNode(null, false, false));
+		
+		//Solve the queueing network
+		solve();
+	}
+	
+	private void solve() {
+		//Consider one queue per resource type/role, let role denote that queue and let tasks_role denote the tasks in each role
+		//Step 1. Calculate lambda_task for each task as follows:
+		//        let A, B, ... be tasks, let START be the start event, and let probability_(x,y) be the probability of transitioning from x to y.  
+		//		  this leads to a system of linear equations that we can solve, we have the equations:
+		//        for each task t: \lambda_t = \lambda*probability_(START,t) + \lambda_A*probability_(A,t) + \lambda_B*probability_(B,t) + ...
+		double aArray[][] = new double[tasks.size()][];
+		double bArray[][] = new double[tasks.size()][];
+		int rowPos = 0;
+		for (String task: tasks) {
+			double taskVector[] = new double[tasks.size()];
+			int colPos = 0;
+			for (String preceedingTask: tasks) {
+				taskVector[colPos] = probability(preceedingTask, task) - (preceedingTask.equals(task)?1.0:0.0);
+				colPos++;
+			}
+			aArray[rowPos] = taskVector;
+			bArray[rowPos] = new double[1];
+			bArray[rowPos][0] = - probability("START", task) * lambda;
+			rowPos++;
+		}
+		Matrix aMatrix = new Matrix(aArray);
+		Matrix bMatrix = new Matrix(bArray);
+		Matrix xMatrix = aMatrix.solve(bMatrix); 
+		
+		lambdaTask = new HashMap<String,Double>();
+		for (int i = 0; i < tasks.size(); i++) {
+			lambdaTask.put(tasks.get(i), xMatrix.get(i, 0));
+		}
+		
+		//Step 2. Calculate lambda_role as the sum of lambda_task for task \in tasks_role
+		//Step 3. Calculate E(B_role) and E(B^2_role) as the weighted average of E(B_task) and E(B^2_task) for task \in tasks_role
+		//Step 4. We can now calculate \rho_role, E(R_role), \Pi_W_role, E(W_role)
+		//Step 5. Calculate E(S), E(W), E(B) for the entire process as follows:
+	}
+		
+	/**
+	 * Returns the interarrival rate of the process as a whole (i.e. the start event)
+	 * 
+	 * @return the interarrival rate
+	 */
+	public double lambda() {
+		return lambda;
+	}
+	
+	/**
+	 * Returns the interarrival rate of the task with the given label or null if it is not specified 
+	 * 
+	 * @param task the label of a task
+	 * @return an interarrival rate
+	 */
+	public Double lambda(String task) {
+		return lambdaTask.get(task);
+	}
+	
+	public Double eB(String task) {
+		return eBTask.get(task);
+	}
+
+	public Double eB2(String task) {
+		return eB2Task.get(task);
+	}
+
+	private void createAdjacencyMatrix(BPMNModel bpmnModel) throws Exception {
+		tasks = new ArrayList<String>();
+		eBTask = new HashMap<String,Double>();
+		eB2Task = new HashMap<String,Double>();
 		taskFlow = new HashMap<String,Map<String,Double>>();
 		taskFlowR = new HashMap<String,Map<String,Double>>();
+		
+		//Create the transition probability matrix
 		for (Node a: bpmnModel.getNodes()) {
+			if (a.getType() == Type.Task) {
+				tasks.add(a.getName());
+				Double ept = DistributionEvaluator.getLambda(a.getProcessingTimeDistribution());
+				if (ept == null) {
+					throw new Exception("ERROR: currently only exponential distributions are allowed for processing times. Task '" + a.getName() + "' does not have an exponential processing time.");
+				}
+				eBTask.put(a.getName(), 1.0/ept);
+				eB2Task.put(a.getName(), 1.0/Math.pow(ept, 2.0));
+			}else if ((a.getType() == Type.Event) && (a.getIncoming().isEmpty())){
+				Double iad = DistributionEvaluator.getLambda(a.getInterArrivalTimeDistribution());				
+				if (iad == null) {
+					throw new Exception("ERROR: currently only exponential distributions are allowed for interarrival times.");
+				}
+				lambda = iad;
+			}
 			if ((a.getType() == Type.Task) || (a.getType() == Type.Event)) {
 				for (Node b: bpmnModel.getNodes()) {
 					if ((b.getType() == Type.Task) || (b.getType() == Type.Event)) {
@@ -64,9 +162,6 @@ public class QueueingNetwork {
 				}
 			}
 		}
-		
-		//Compute execution tree
-		executionTree = createExecutionTree(bpmnModel.nodeByName("START"), null, new ExecutionNode(null, false, false));
 	}
 	
 	/**
@@ -129,7 +224,6 @@ public class QueueingNetwork {
 			return subTree;
 		}
 	}
-
 	
 	private String executionTreeToString(ExecutionNode tree) {
 		String result = "";

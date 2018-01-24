@@ -455,21 +455,6 @@ public class BPMNParser extends DefaultHandler{
 				errors.add("The case attributes are not formatted correctly: " + String.join(",", parseErrors));						
 			}			
 		}
-		if (result.getResourceTypes().size() == 0){
-			for (Role r: result.getRoles()) {
-				ResourceType rt = new ResourceType();
-				rt.setName(r.getName());
-				rt.addRole(r);
-			    Pattern p = Pattern.compile("\\((\\d+)\\)");
-			    Matcher m = p.matcher(r.getName());
-			    if (m.find()) {
-			    	rt.setNumber(Integer.parseInt(m.group(1)));
-			    }else {
-			    	rt.setNumber(1);
-			    }
-			    result.addResourceType(rt);
-			}
-		}
 		if (result.getRoles().size() == 0){
 			errors.add("The model has no roles.");
 		}
@@ -479,6 +464,23 @@ public class BPMNParser extends DefaultHandler{
 				errors.add("There are two roles that have the name '" + role.getName() + "'.");
 			}
 			roleNames.add(role.getName());
+		}
+		if (result.getResourceTypes().size() == 0){
+			for (Role r: result.getRoles()) {
+				if (r.getName() != null) {
+					ResourceType rt = new ResourceType();
+					rt.setName(r.getName());
+					rt.addRole(r);
+					Pattern p = Pattern.compile("\\((\\d+)\\)");
+					Matcher m = p.matcher(r.getName());
+					if (m.find()) {
+						rt.setNumber(Integer.parseInt(m.group(1)));
+					}else {
+						rt.setNumber(1);
+					}
+					result.addResourceType(rt);
+				}
+			}
 		}
 		Set<String> taskNames = new HashSet<String>();
 		for (Node node: result.getNodes()){

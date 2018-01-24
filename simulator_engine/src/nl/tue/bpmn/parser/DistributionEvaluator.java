@@ -27,6 +27,27 @@ public class DistributionEvaluator {
 	    return evaluate(parser.distribution());
 	}
 	
+	/**
+	 * Returns the lambda of an exponential distribution, or null if the distribution is not exponential. 
+	 * 
+	 * @param distribution A string representing the data item distribution in the agreed upon format.
+	 * @return the lambda of an exponential distribution or null
+	 */
+	public static Double getLambda(String distribution) {
+		DistributionGrammarLexer lexer = new DistributionGrammarLexer(new ANTLRInputStream(distribution));
+	    CommonTokenStream tokens = new CommonTokenStream(lexer);
+	    DistributionGrammarParser parser = new DistributionGrammarParser(tokens);
+	    return getLambda(parser.distribution());
+	}
+
+	private static Double getLambda(DistributionContext dc){
+		if (dc.getText().startsWith("exp")){
+			return Double.parseDouble(dc.NUMBER(0).getText());
+		}else {
+			return null;
+		}
+	}
+	
 	private String evaluate(DistributionContext dc){
 		if (dc.getText().startsWith("exp")){
 			double lambda = Double.parseDouble(dc.NUMBER(0).getText());

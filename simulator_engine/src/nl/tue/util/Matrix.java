@@ -153,6 +153,9 @@ public class Matrix {
             x.data[j][0] = (b.data[j][0] - t) / A.data[j][j];
         }
         return x;
-   
+    }
+    
+    public double get(int row, int column) {
+    	return data[row][column]; 
     }
 } 
