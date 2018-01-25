@@ -17,6 +17,7 @@ import nl.tue.bpmn.concepts.Type;
 import nl.tue.bpmn.concepts.TypeGtw;
 import nl.tue.bpmn.parser.DistributionEvaluator;
 import nl.tue.util.Matrix;
+import nl.tue.util.QueueingFormulas;
 
 /**
  *
@@ -37,6 +38,8 @@ public class QueueingNetwork {
 	private Map<String,Double> lambdaRole; //the lambda of each role
 	private Map<String,Double> eBRole; //the expected processing time of each task
 	private Map<String,Double> eB2Role; //the expected processing time of each task
+	private Map<String,Double> rhoRole; //the expected processing time of each task
+	private Map<String,Double> wRole; //the expected processing time of each task
 	
 	private ExecutionNode executionTree;
 
@@ -121,8 +124,16 @@ public class QueueingNetwork {
 			eB2Role.put(r.getName(), eB2_r);
 		}		
 		
-		//Step 4. We can now calculate \rho_role, E(R_role), \Pi_W_role, E(W_role)
-		//TODO Store rho_role and E(W_role) for later reporting, the other two do not have to be stored
+		//Step 4. We can now calculate \rho_role, E(W_role)
+		rhoRole = new HashMap<String,Double>();
+		wRole = new HashMap<String,Double>();
+		for (ResourceType rt: bpmnModel.getResourceTypes()) {			
+			String role = rt.getName(); //Note that we can only do this, because we checked in the syntax constraints that roles = resourcetypes
+			double c = rt.getNumber();
+			double rho = QueueingFormulas.rho(lambdaRole.get(role), 1.0/eBRole.get(role), c);
+			rhoRole.put(role, rho);
+			wRole.put(role, QueueingFormulas.EWMMc(eBRole.get(role), eB2Role.get(role), rho, c));			
+		}		
 		
 		//Step 5. Calculate E(S), E(W), E(B) for the entire process as follows:
 	}
