@@ -27,11 +27,16 @@ import nl.tue.util.Matrix;
  */
 public class QueueingNetwork {
 
+	private BPMNModel bpmnModel;
+	
 	private List<String> tasks;
 	private double lambda;
 	private Map<String,Double> eBTask; //the expected processing time of each task
 	private Map<String,Double> eB2Task; //the expected processing time of each task
 	private Map<String,Double> lambdaTask; //the lambda of each task
+	private Map<String,Double> lambdaRole; //the lambda of each role
+	private Map<String,Double> eBRole; //the expected processing time of each task
+	private Map<String,Double> eB2Role; //the expected processing time of each task
 	
 	private ExecutionNode executionTree;
 
@@ -40,7 +45,9 @@ public class QueueingNetwork {
 	private Map<String,Map<String,Double>> taskFlow; //the transitions (elementA, elementB, probability), identified by elementA
 	private Map<String,Map<String,Double>> taskFlowR; //the transitions (elementA, elementB, probability), identified by elementB
 	
-	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{		
+	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{
+		this.bpmnModel = bpmnModel;
+		
 		//Test more detailed syntax constraints
 		testSyntaxConstraints(bpmnModel);
 		
@@ -84,9 +91,39 @@ public class QueueingNetwork {
 			lambdaTask.put(tasks.get(i), xMatrix.get(i, 0));
 		}
 		
+		//TODO: TEST FROM HERE
 		//Step 2. Calculate lambda_role as the sum of lambda_task for task \in tasks_role
+		lambdaRole = new HashMap<String,Double>();
+		for (Role r: bpmnModel.getRoles()) {
+			double lambda_r = 0.0;
+			for (Node n: r.getContainedNodes()) {
+				if (n.getType() == Type.Task) {
+					lambda_r += lambdaTask.get(n.getName());
+				}
+			}
+			lambdaRole.put(r.getName(), lambda_r);
+		}
+		
 		//Step 3. Calculate E(B_role) and E(B^2_role) as the weighted average of E(B_task) and E(B^2_task) for task \in tasks_role
+		eBRole = new HashMap<String,Double>();
+		eB2Role = new HashMap<String,Double>();
+		for (Role r: bpmnModel.getRoles()) {
+			double lambda_r = lambdaRole.get(r.getName());
+			double eB_r = 0.0;
+			double eB2_r = 0.0;
+			for (Node n: r.getContainedNodes()) {
+				if (n.getType() == Type.Task) {
+					eB_r += (lambdaTask.get(n.getName())/lambda_r) * eBTask.get(n.getName());
+					eB2_r += (lambdaTask.get(n.getName())/lambda_r) * eB2Task.get(n.getName());
+				}
+			}
+			eBRole.put(r.getName(), eB_r);
+			eB2Role.put(r.getName(), eB2_r);
+		}		
+		
 		//Step 4. We can now calculate \rho_role, E(R_role), \Pi_W_role, E(W_role)
+		//TODO Store rho_role and E(W_role) for later reporting, the other two do not have to be stored
+		
 		//Step 5. Calculate E(S), E(W), E(B) for the entire process as follows:
 	}
 		
