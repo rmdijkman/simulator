@@ -63,6 +63,9 @@ public class TestQueueingComputation {
 		
 		assertEquals((Double) 0.33, round(qn.eB("Register Sales Order"),2));
 		assertEquals((Double) 0.5, qn.eB("Pre-process Sales Order"));
+
+		assertEquals((Double) round(2.0/9.0,2), round(qn.eB2("Register Sales Order"),2));
+		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Pre-process Sales Order"),2));
 	}
 
 	@Test
@@ -74,6 +77,9 @@ public class TestQueueingComputation {
 		
 		assertEquals((Double) 0.5, qn.eB("Register Sales Order"));
 		assertEquals((Double) 0.5, qn.eB("Pre-process Sales Order"));
+
+		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Register Sales Order"),2));
+		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Pre-process Sales Order"),2));
 	}
 
 	@Test
@@ -85,6 +91,9 @@ public class TestQueueingComputation {
 		
 		assertEquals((Double) 0.5, qn.eB("Register Sales Order"));
 		assertEquals((Double) 0.5, qn.eB("Pre-process Sales Order"));
+
+		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Register Sales Order"),2));
+		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Pre-process Sales Order"),2));
 	}
 
 	@Test
@@ -97,6 +106,10 @@ public class TestQueueingComputation {
 		assertEquals((Double) 0.375, round(qn.eB("Handle Simple Appeal"),3));
 		assertEquals((Double) 0.125, round(qn.eB("Inform Citizen"),3));
 		assertEquals((Double) 0.5, qn.eB("Handle Complex Appeal"));
+
+		assertEquals((Double) round(9.0/32.0,2), round(qn.eB2("Handle Simple Appeal"),2));
+		assertEquals((Double) round(1.0/32.0,2), round(qn.eB2("Inform Citizen"),2));
+		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Handle Complex Appeal"),2));
 	}
 	
 	private Double round(double number, int digits) {

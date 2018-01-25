@@ -133,7 +133,7 @@ public class QueueingNetwork {
 					throw new Exception("ERROR: currently only exponential distributions are allowed for processing times. Task '" + a.getName() + "' does not have an exponential processing time.");
 				}
 				eBTask.put(a.getName(), 1.0/ept);
-				eB2Task.put(a.getName(), 1.0/Math.pow(ept, 2.0));
+				eB2Task.put(a.getName(), 2.0/Math.pow(ept, 2.0));
 			}else if ((a.getType() == Type.Event) && (a.getIncoming().isEmpty())){
 				Double iad = DistributionEvaluator.getLambda(a.getInterArrivalTimeDistribution());				
 				if (iad == null) {
