@@ -39,7 +39,10 @@ public class QueueingNetwork {
 	private Map<String,Double> eBRole; //the expected processing time of each task
 	private Map<String,Double> eB2Role; //the expected processing time of each task
 	private Map<String,Double> rhoRole; //the expected processing time of each task
-	private Map<String,Double> wRole; //the expected processing time of each task
+	private Map<String,Double> eWRole; //the expected processing time of each task
+	private double eS;
+	
+	private Map<String,String> task2Role;
 	
 	private ExecutionNode executionTree;
 
@@ -54,11 +57,20 @@ public class QueueingNetwork {
 		//Test more detailed syntax constraints
 		testSyntaxConstraints(bpmnModel);
 		
+		task2Role = new HashMap<String,String>();
+		for (Role r: bpmnModel.getRoles()) {
+			for (Node n: r.getContainedNodes()) {
+				if (n.getType() == Type.Task) {
+					task2Role.put(n.getName(), r.getName());
+				}
+			}
+		}
+		
 		//Create the adjacency matrix 
 		createAdjacencyMatrix(bpmnModel);
 		
 		//Compute execution tree
-		executionTree = createExecutionTree(bpmnModel.nodeByName("START"), null, new ExecutionNode(null, false, false));
+		executionTree = createExecutionTree(bpmnModel.nodeByName("START"), null, new ExecutionNode(null, false, false, 1.0));
 		
 		//Solve the queueing network
 		solve();
@@ -94,7 +106,6 @@ public class QueueingNetwork {
 			lambdaTask.put(tasks.get(i), xMatrix.get(i, 0));
 		}
 		
-		//TODO: TEST FROM HERE
 		//Step 2. Calculate lambda_role as the sum of lambda_task for task \in tasks_role
 		lambdaRole = new HashMap<String,Double>();
 		for (Role r: bpmnModel.getRoles()) {
@@ -126,16 +137,29 @@ public class QueueingNetwork {
 		
 		//Step 4. We can now calculate \rho_role, E(W_role)
 		rhoRole = new HashMap<String,Double>();
-		wRole = new HashMap<String,Double>();
+		eWRole = new HashMap<String,Double>();
 		for (ResourceType rt: bpmnModel.getResourceTypes()) {			
 			String role = rt.getName(); //Note that we can only do this, because we checked in the syntax constraints that roles = resourcetypes
 			double c = rt.getNumber();
 			double rho = QueueingFormulas.rho(lambdaRole.get(role), 1.0/eBRole.get(role), c);
 			rhoRole.put(role, rho);
-			wRole.put(role, QueueingFormulas.EWMMc(eBRole.get(role), eB2Role.get(role), rho, c));			
+			eWRole.put(role, QueueingFormulas.EWMMc(eBRole.get(role), eB2Role.get(role), rho, c));			
 		}		
 		
-		//Step 5. Calculate E(S), E(W), E(B) for the entire process as follows:
+		//Step 5. Calculate E(S), E(W), E(B) for the entire process as follows
+		//        assume that we have a block structured model
+		//		  E(S) of a choice between block A and block B = probability_{block A} * E(S_{block A}) + probability_{block B} * E(S_{block B})
+		//		  E(S) of a sequence of block A and block B = E(S_{block A}) + E(S_{block B})
+		//		  E(S) of a loop of block A = 
+		//		  E(S) of a trivial block that contains a single queue A = E(S_A)
+		//        E(W) and E(B) can be calculated analogously
+		eS = executionTreeToES(executionTree);
+		//TODO: Still calculate eB and eW
+		//TODO: Also calculate for loops
+	}
+	
+	public double eS() {
+		return eS;
 	}
 		
 	/**
@@ -230,7 +254,7 @@ public class QueueingNetwork {
 
 	private ExecutionNode createExecutionTree(Node fromNode, Node toNode, ExecutionNode subTree) {
 		if ((fromNode.getType() == Type.Task) || (fromNode.getType() == Type.Event)){
-			subTree.children.add(new ExecutionNode(fromNode, false, false));
+			subTree.children.add(new ExecutionNode(fromNode, false, false, 1.0));
 		}
 		
 		//If we have reached the end of a loop: done creating execution path
@@ -247,7 +271,7 @@ public class QueueingNetwork {
 		List<Arc> nonLoops = new ArrayList<Arc>();
 		for (Arc outgoing: fromNode.getOutgoing()) {
 			if (startsLoop(outgoing)) {
-				ExecutionNode loop = new ExecutionNode(fromNode, true, false);
+				ExecutionNode loop = new ExecutionNode(fromNode, true, false, transitionProbability(outgoing));
 				subTree.children.add(loop);
 				createExecutionTree(outgoing.getTarget(), fromNode, loop);
 			} else {
@@ -258,11 +282,15 @@ public class QueueingNetwork {
 		//Recurse for all non-loop children
 		//If it is a choice
 		if (nonLoops.size() > 1) {
-			ExecutionNode newSubTree = new ExecutionNode(fromNode, false, true);
+			ExecutionNode newSubTree = new ExecutionNode(fromNode, false, true, 1.0);
 			subTree.children.add(newSubTree);
-			for (Arc outgoing: nonLoops) {				
-				newSubTree.children.add(createExecutionTree(outgoing.getTarget(), toNode, new ExecutionNode(null, false, false)));
-			}	
+			for (Arc outgoing: nonLoops) {
+				//TODO This must be changed for the situation of a choice/loop start that have the same XOR-split as a starting point. 
+				//In that case, the probabilities of the choice part must be normalized: let 'a' be the loop path and 'b','c' be the choice paths, 
+				//then probability 'b' must be normalized as probability 'b'/(probability 'b' + probability 'c')
+				//TODO It is even better to refactor this into using a RPST
+				newSubTree.children.add(createExecutionTree(outgoing.getTarget(), toNode, new ExecutionNode(null, false, false, transitionProbability(outgoing))));
+			}
 			return newSubTree;
 		}else {
 			//If it is not a choice
@@ -273,6 +301,34 @@ public class QueueingNetwork {
 		}
 	}
 	
+	private double executionTreeToES(ExecutionNode tree) {		
+		double result = 0.0;
+		if ((tree.node != null) && (tree.node.getType() == Type.Task)){
+			result += eBTask.get(tree.node.getName());
+			result += eWRole.get(task2Role.get(tree.node.getName()));
+		}
+		if (tree.isChoice) {
+			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+				ExecutionNode child = children.next();
+				result += child.probability * executionTreeToES(child);
+			}
+		} else {
+			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+				ExecutionNode child = children.next();
+				result += executionTreeToES(child);
+			}			
+		}
+		return result;
+	}
+	
+	/**
+	 * Returns a string representation of all possible execution paths through the model
+	 * 
+	 * @return a string representation of all possible execution paths through the model
+	 */
+	public String executionPathsToString() {
+		return executionTreeToString(executionTree);
+	}
 	private String executionTreeToString(ExecutionNode tree) {
 		String result = "";
 		if (tree.isLoop) {
@@ -296,20 +352,13 @@ public class QueueingNetwork {
 		}
 		return result;
 	}
-	/**
-	 * Returns a string representation of all possible execution paths through the model
-	 * 
-	 * @return a string representation of all possible execution paths through the model
-	 */
-	public String executionPathsToString() {
-		return executionTreeToString(executionTree);
-	}
 	
 	private boolean startsLoop(Arc a) {		
 		//the source of the arc is an XOR-split		
 		//the arc will always return on itself
 		return ((a.getSource().getType() == Type.Gateway) && (a.getSource().getTypeGtw() == TypeGtw.XSplit) && alwaysReturnsOn(a,a,new HashSet<Arc>())); 
 	}
+	
 	private boolean alwaysReturnsOn(Arc a, Arc on, Set<Arc> visited) {		
 		if (a.getTarget().getOutgoing().contains(on)) {
 			return true;
@@ -364,12 +413,17 @@ public class QueueingNetwork {
 		}		
 	}
 	
+	private Double transitionProbability(Arc arc) {
+		double transitionProbability = 1.0; //If there is no annotation on the arc, we assume a probability of 1.0
+		if ((arc.getCondition() != null) && (arc.getCondition().endsWith("%"))) {
+			transitionProbability *= Double.parseDouble(arc.getCondition().substring(0, arc.getCondition().length()-1))/100;
+		}
+		return transitionProbability;
+	}
+	
 	private Double pathProbability(Node a, Node b, Set<Node> visitedGateways) throws Exception {
 		for (Arc arc: a.getOutgoing()) {
-			double transitionProbability = 1.0; //If there is no annotation on the arc, we assume a probability of 1.0
-			if ((arc.getCondition() != null) && (arc.getCondition().endsWith("%"))) {
-				transitionProbability *= Double.parseDouble(arc.getCondition().substring(0, arc.getCondition().length()-1))/100;
-			}
+			double transitionProbability = transitionProbability(arc);
 			if (arc.getTarget().equals(b)) {
 				return transitionProbability;
 			}else if (visitedGateways.contains(arc.getTarget())) {
@@ -393,12 +447,14 @@ public class QueueingNetwork {
 		Node node;
 		boolean isLoop;
 		boolean isChoice;
+		double probability;
 		
-		public ExecutionNode(Node node, boolean isLoop, boolean isChoice) {
+		public ExecutionNode(Node node, boolean isLoop, boolean isChoice, double probability) {
 			this.children = new ArrayList<ExecutionNode>();
 			this.node = node;
 			this.isLoop = isLoop;
 			this.isChoice = isChoice;
+			this.probability = probability;
 		}
 	}
 }

@@ -112,6 +112,46 @@ public class TestQueueingComputation {
 		assertEquals((Double) round(1.0/2.0,2), round(qn.eB2("Handle Complex Appeal"),2));
 	}
 	
+	@Test
+	public void testExercise11ES() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Exercise 11.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+
+		assertEquals((Double) round(31.0/6.0,2), round(qn.eS(),2));
+	}
+
+	@Test
+	public void testExercise12ES() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Exercise 12.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+
+		assertEquals((Double) round(19.0,2), round(qn.eS(),2));
+	}
+
+	@Test
+	public void testExercise13ES() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Exercise 13.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+
+		assertEquals((Double) round(380.0/39.0,2), round(qn.eS(),2));
+	}
+
+	@Test
+	public void testExercise14ES() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Exercise 14.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+
+		assertEquals((Double) round(14.0/15.0,2), round(qn.eS(),2));
+	}
+
 	private Double round(double number, int digits) {
 		return new Double(Math.round(number*Math.pow(10.0,digits))/Math.pow(10.0,digits));
 	}
