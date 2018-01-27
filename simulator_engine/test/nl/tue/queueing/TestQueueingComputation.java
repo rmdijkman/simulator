@@ -152,6 +152,17 @@ public class TestQueueingComputation {
 		assertEquals((Double) round(14.0/15.0,2), round(qn.eS(),2));
 	}
 
+	@Test
+	public void testExercise15ES() throws Exception {
+		BPMNParser parser = new BPMNParser();
+		parser.parse("./resources/tests/queueing/Exercise 15.bpmn");
+		BPMNModel model = parser.getParsedModel();
+		QueueingNetwork qn = new QueueingNetwork(model);
+
+		System.out.println(qn.eS());
+		//assertEquals((Double) round(14.0/15.0,2), round(qn.eS(),2));
+	}
+
 	private Double round(double number, int digits) {
 		return new Double(Math.round(number*Math.pow(10.0,digits))/Math.pow(10.0,digits));
 	}

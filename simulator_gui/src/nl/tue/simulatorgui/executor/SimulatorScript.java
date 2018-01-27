@@ -17,6 +17,7 @@ public class SimulatorScript{
 	long simulationLength;
 	long replications;
 	long warmup;
+	boolean queueing;
 
 	public SimulatorScript(File file){
 		this.file = file;		
@@ -29,6 +30,7 @@ public class SimulatorScript{
 		setSimulationLength(Long.parseLong(br.readLine()));
 		setReplications(Long.parseLong(br.readLine()));
 		setWarmup(Long.parseLong(br.readLine()));
+		setQueueing(Boolean.parseBoolean(br.readLine()));
 		br.close();
 		fr.close();
 	}
@@ -39,6 +41,7 @@ public class SimulatorScript{
 		writer.println(Long.toString(simulationLength));
 		writer.println(Long.toString(replications));
 		writer.println(Long.toString(warmup));
+		writer.println(Boolean.toString(queueing));
 		writer.close();
 	}
 	
@@ -85,5 +88,13 @@ public class SimulatorScript{
 
 	public void setWarmup(long warmup) {
 		this.warmup = warmup;
+	}
+
+	public void setQueueing(boolean queueing) {
+		this.queueing = queueing;
+	}
+	
+	public boolean getQueueing() {
+		return this.queueing;
 	}
 }

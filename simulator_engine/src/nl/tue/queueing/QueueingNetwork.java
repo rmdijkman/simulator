@@ -41,6 +41,8 @@ public class QueueingNetwork {
 	private Map<String,Double> rhoRole; //the expected processing time of each task
 	private Map<String,Double> eWRole; //the expected processing time of each task
 	private double eS;
+	private double eB;
+	private double eW;
 	
 	private Map<String,String> task2Role;
 	
@@ -154,14 +156,22 @@ public class QueueingNetwork {
 		//		  E(S) of a trivial block that contains a single queue A = E(S_A)
 		//        E(W) and E(B) can be calculated analogously
 		eS = executionTreeToES(executionTree);
-		//TODO: Still calculate eB and eW
-		//TODO: Also calculate for loops
+		eB = executionTreeToEB(executionTree);
+		eW = eS - eB;
 	}
 	
 	public double eS() {
 		return eS;
 	}
-		
+
+	public double eB() {
+		return eB;
+	}
+
+	public double eW() {
+		return eW;
+	}
+
 	/**
 	 * Returns the interarrival rate of the process as a whole (i.e. the start event)
 	 * 
@@ -312,6 +322,9 @@ public class QueueingNetwork {
 				ExecutionNode child = children.next();
 				result += child.probability * executionTreeToES(child);
 			}
+		} else if (tree.isLoop) {
+			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
+			result += (1.0/(1.0 - tree.probability) - 1.0) * executionTreeToES(child);
 		} else {
 			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
 				ExecutionNode child = children.next();
@@ -320,7 +333,29 @@ public class QueueingNetwork {
 		}
 		return result;
 	}
-	
+
+	private double executionTreeToEB(ExecutionNode tree) {		
+		double result = 0.0;
+		if ((tree.node != null) && (tree.node.getType() == Type.Task)){
+			result += eBTask.get(tree.node.getName());
+		}
+		if (tree.isChoice) {
+			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+				ExecutionNode child = children.next();
+				result += child.probability * executionTreeToES(child);
+			}
+		} else if (tree.isLoop) {
+			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
+			result += (1.0/(1.0 - child.probability) - 1.0) * executionTreeToES(child);
+		} else {
+			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+				ExecutionNode child = children.next();
+				result += executionTreeToES(child);
+			}			
+		}
+		return result;
+	}
+
 	/**
 	 * Returns a string representation of all possible execution paths through the model
 	 * 
@@ -399,8 +434,7 @@ public class QueueingNetwork {
 		}
 		if (!resourceTypesEqualRoles) {
 			throw new Exception("ERROR: queueing models can only be used in BPMN models that just use roles (no resource types).");
-		}
-		
+		}		
 		for (Node n: bpmnModel.getNodes()) {
 			//There should be no intermediate events, 
 			if ((n.getType() == Type.Event) && (n.getIncoming().size() > 0) && (n.getOutgoing().size() > 0)) {
@@ -410,7 +444,12 @@ public class QueueingNetwork {
 			if ((n.getType() == Type.Gateway) && ((n.getTypeGtw() == TypeGtw.ParJoin) || (n.getTypeGtw() == TypeGtw.ParSplit))) {
 				throw new Exception("ERROR: queueing models can only be used in BPMN models that do not have parallel gateways.");								
 			}
-		}		
+		}
+		for (Arc a: bpmnModel.getArcs()) {
+			if ((a.getCondition() != null) && (a.getCondition().length() != 0) && !a.getCondition().endsWith("%")) {
+				throw new Exception("ERROR: queueing models can only be used in BPMN models with probabilities on arcs (no advanced conditions).");												
+			}
+		}
 	}
 	
 	private Double transitionProbability(Arc arc) {

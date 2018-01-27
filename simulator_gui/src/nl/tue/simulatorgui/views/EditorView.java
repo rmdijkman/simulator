@@ -15,6 +15,7 @@ import nl.tue.simulatorgui.controllers.EditorController;
 import nl.tue.simulatorgui.core.Environment;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 
 import java.awt.Dimension;
@@ -30,6 +31,7 @@ public class EditorView extends JPanel implements ActionListener {
 	private JTextField txtLength;
 	private JTextField txtReplications;
 	private JTextField txtWarmup;
+	private JCheckBox chkQueueing;
 	private String selectedFile;
 
 	public EditorView(EditorController controller){
@@ -46,7 +48,7 @@ public class EditorView extends JPanel implements ActionListener {
 		txtFile = new JTextField();
 		txtFile.setEnabled(false);
 		txtFile.setEditable(false);
-		txtFile.setBounds(150, 48, 286, 28);
+		txtFile.setBounds(160, 48, 286, 28);
 		add(txtFile);
 		txtFile.setColumns(10);
 
@@ -58,7 +60,7 @@ public class EditorView extends JPanel implements ActionListener {
 				}
 			}
 		});
-		btnFile.setBounds(450, 48, 32, 28);
+		btnFile.setBounds(460, 48, 32, 28);
 		add(btnFile);
 
 		//Simulation length entry field
@@ -69,7 +71,7 @@ public class EditorView extends JPanel implements ActionListener {
 		txtLength = new JTextField();
 		txtLength.setEnabled(true);
 		txtLength.setEditable(true);
-		txtLength.setBounds(150, 88, 286, 28);
+		txtLength.setBounds(160, 88, 286, 28);
 		add(txtLength);
 		txtLength.setColumns(7);
 		((PlainDocument) txtLength.getDocument()).setDocumentFilter(new MyIntFilter(this));
@@ -82,7 +84,7 @@ public class EditorView extends JPanel implements ActionListener {
 		txtReplications = new JTextField();
 		txtReplications.setEnabled(true);
 		txtReplications.setEditable(true);
-		txtReplications.setBounds(150, 128, 286, 28);
+		txtReplications.setBounds(160, 128, 286, 28);
 		add(txtReplications);
 		txtReplications.setColumns(7);
 		((PlainDocument) txtReplications.getDocument()).setDocumentFilter(new MyIntFilter(this));
@@ -95,10 +97,24 @@ public class EditorView extends JPanel implements ActionListener {
 		txtWarmup = new JTextField();
 		txtWarmup.setEnabled(true);
 		txtWarmup.setEditable(true);
-		txtWarmup.setBounds(150, 168, 286, 28);
+		txtWarmup.setBounds(160, 168, 286, 28);
 		add(txtWarmup);
 		txtWarmup.setColumns(7);
 		((PlainDocument) txtWarmup.getDocument()).setDocumentFilter(new MyIntFilter(this));
+
+		//Warmup entry field
+		JLabel lblQueueing = new JLabel("Use queueing model:");
+		lblQueueing.setBounds(30, 214, 160, 16);
+		add(lblQueueing);
+
+		chkQueueing = new JCheckBox();
+		chkQueueing.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				controller.fileChanged();					
+			}
+		});
+		chkQueueing.setBounds(160, 214, 16, 16);
+		add(chkQueueing);
 	}
 
 	public EditorController getController() {
@@ -176,6 +192,14 @@ public class EditorView extends JPanel implements ActionListener {
 
 	public void setWarmup(long warmup){
 		txtWarmup.setText(Long.toString(warmup));
+	}
+	
+	public void setQueueing(boolean useQueueing) {
+		chkQueueing.setSelected(useQueueing);
+	}
+	
+	public boolean getQueueing() {
+		return chkQueueing.isSelected();
 	}
 
 	class MyIntFilter extends DocumentFilter {
