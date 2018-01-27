@@ -15,6 +15,7 @@ import nl.tue.bpmn.concepts.ResourceType;
 import nl.tue.bpmn.concepts.Role;
 import nl.tue.bpmn.concepts.Type;
 import nl.tue.bpmn.concepts.TypeGtw;
+import nl.tue.bpmn.parser.BPMNParseException;
 import nl.tue.bpmn.parser.DistributionEvaluator;
 import nl.tue.util.Matrix;
 import nl.tue.util.QueueingFormulas;
@@ -53,7 +54,7 @@ public class QueueingNetwork {
 	private Map<String,Map<String,Double>> taskFlow; //the transitions (elementA, elementB, probability), identified by elementA
 	private Map<String,Map<String,Double>> taskFlowR; //the transitions (elementA, elementB, probability), identified by elementB
 	
-	public QueueingNetwork(BPMNModel bpmnModel) throws Exception{
+	public QueueingNetwork(BPMNModel bpmnModel) throws BPMNParseException{
 		this.bpmnModel = bpmnModel;
 		
 		//Test more detailed syntax constraints
@@ -160,6 +161,10 @@ public class QueueingNetwork {
 		eW = eS - eB;
 	}
 	
+	public double rho(String role) {
+		return rhoRole.get(role);
+	}
+	
 	public double eS() {
 		return eS;
 	}
@@ -194,12 +199,16 @@ public class QueueingNetwork {
 	public Double eB(String task) {
 		return eBTask.get(task);
 	}
+	
+	public Double eW(String task) {
+		return eWRole.get(task2Role.get(task));
+	}
 
 	public Double eB2(String task) {
 		return eB2Task.get(task);
 	}
 
-	private void createAdjacencyMatrix(BPMNModel bpmnModel) throws Exception {
+	private void createAdjacencyMatrix(BPMNModel bpmnModel) throws BPMNParseException {
 		tasks = new ArrayList<String>();
 		eBTask = new HashMap<String,Double>();
 		eB2Task = new HashMap<String,Double>();
@@ -212,14 +221,14 @@ public class QueueingNetwork {
 				tasks.add(a.getName());
 				Double ept = DistributionEvaluator.getLambda(a.getProcessingTimeDistribution());
 				if (ept == null) {
-					throw new Exception("ERROR: currently only exponential distributions are allowed for processing times. Task '" + a.getName() + "' does not have an exponential processing time.");
+					throw new BPMNParseException("ERROR: currently only exponential distributions are allowed for processing times. Task '" + a.getName() + "' does not have an exponential processing time.");
 				}
 				eBTask.put(a.getName(), 1.0/ept);
 				eB2Task.put(a.getName(), 2.0/Math.pow(ept, 2.0));
 			}else if ((a.getType() == Type.Event) && (a.getIncoming().isEmpty())){
 				Double iad = DistributionEvaluator.getLambda(a.getInterArrivalTimeDistribution());				
 				if (iad == null) {
-					throw new Exception("ERROR: currently only exponential distributions are allowed for interarrival times.");
+					throw new BPMNParseException("ERROR: currently only exponential distributions are allowed for interarrival times.");
 				}
 				lambda = iad;
 			}
@@ -234,7 +243,7 @@ public class QueueingNetwork {
 						}
 						double probability = pathProbability(a, b, new HashSet<Node>());
 						if ((taskFlow.get(a.getName()).get(b.getName()) != null) && (taskFlow.get(a.getName()).get(b.getName()) < probability) && !b.getName().equals("END")) {
-							throw new Exception("ERROR: it should not be possible to have multiple paths - consisting only of control nodes - between two nodes.");
+							throw new BPMNParseException("ERROR: it should not be possible to have multiple paths - consisting only of control nodes - between two nodes.");
 						}
 						if ((taskFlow.get(a.getName()).get(b.getName()) == null) || (taskFlow.get(a.getName()).get(b.getName()) < probability)) { 
 							taskFlow.get(a.getName()).put(b.getName(), probability);					
@@ -342,15 +351,15 @@ public class QueueingNetwork {
 		if (tree.isChoice) {
 			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
 				ExecutionNode child = children.next();
-				result += child.probability * executionTreeToES(child);
+				result += child.probability * executionTreeToEB(child);
 			}
 		} else if (tree.isLoop) {
 			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
-			result += (1.0/(1.0 - child.probability) - 1.0) * executionTreeToES(child);
+			result += (1.0/(1.0 - child.probability) - 1.0) * executionTreeToEB(child);
 		} else {
 			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
 				ExecutionNode child = children.next();
-				result += executionTreeToES(child);
+				result += executionTreeToEB(child);
 			}			
 		}
 		return result;
@@ -413,7 +422,7 @@ public class QueueingNetwork {
 		return always;
 	}
 	
-	private void testSyntaxConstraints(BPMNModel bpmnModel) throws Exception{		
+	private void testSyntaxConstraints(BPMNModel bpmnModel) throws BPMNParseException{		
 		//There should be a 1-to-1 correspondence between roles and resource types 
 		boolean resourceTypesEqualRoles = true;
 		if (bpmnModel.getResourceTypes().size() != bpmnModel.getRoles().size()) {
@@ -433,21 +442,21 @@ public class QueueingNetwork {
 			}
 		}
 		if (!resourceTypesEqualRoles) {
-			throw new Exception("ERROR: queueing models can only be used in BPMN models that just use roles (no resource types).");
+			throw new BPMNParseException("ERROR: queueing models can only be used in BPMN models that just use roles (no resource types).");
 		}		
 		for (Node n: bpmnModel.getNodes()) {
 			//There should be no intermediate events, 
 			if ((n.getType() == Type.Event) && (n.getIncoming().size() > 0) && (n.getOutgoing().size() > 0)) {
-				throw new Exception("ERROR: queueing models can only be used in BPMN models that do not have intermediate events.");				
+				throw new BPMNParseException("ERROR: queueing models can only be used in BPMN models that do not have intermediate events.");				
 			}
 			//There should be no parallel gateways
 			if ((n.getType() == Type.Gateway) && ((n.getTypeGtw() == TypeGtw.ParJoin) || (n.getTypeGtw() == TypeGtw.ParSplit))) {
-				throw new Exception("ERROR: queueing models can only be used in BPMN models that do not have parallel gateways.");								
+				throw new BPMNParseException("ERROR: queueing models can only be used in BPMN models that do not have parallel gateways.");								
 			}
 		}
 		for (Arc a: bpmnModel.getArcs()) {
 			if ((a.getCondition() != null) && (a.getCondition().length() != 0) && !a.getCondition().endsWith("%")) {
-				throw new Exception("ERROR: queueing models can only be used in BPMN models with probabilities on arcs (no advanced conditions).");												
+				throw new BPMNParseException("ERROR: queueing models can only be used in BPMN models with probabilities on arcs (no advanced conditions).");												
 			}
 		}
 	}
@@ -460,14 +469,14 @@ public class QueueingNetwork {
 		return transitionProbability;
 	}
 	
-	private Double pathProbability(Node a, Node b, Set<Node> visitedGateways) throws Exception {
+	private Double pathProbability(Node a, Node b, Set<Node> visitedGateways) throws BPMNParseException {
 		for (Arc arc: a.getOutgoing()) {
 			double transitionProbability = transitionProbability(arc);
 			if (arc.getTarget().equals(b)) {
 				return transitionProbability;
 			}else if (visitedGateways.contains(arc.getTarget())) {
 				//This is to prevent infinite loops
-				throw new Exception("ERROR: queueing models cannot be used in BPMN models that have loops with only control nodes.");
+				throw new BPMNParseException("ERROR: queueing models cannot be used in BPMN models that have loops with only control nodes.");
 			}else if (arc.getTarget().getType() == Type.Gateway) {
 				if (a.getType() == Type.Gateway) {
 					visitedGateways.add(a);

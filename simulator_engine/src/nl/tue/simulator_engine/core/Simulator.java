@@ -11,15 +11,16 @@ import desmoj.core.simulator.TimeInstant;
 import nl.tue.bpmn.concepts.BPMNModel;
 import nl.tue.bpmn.parser.BPMNParseException;
 import nl.tue.bpmn.parser.BPMNParser;
+import nl.tue.queueing.QueueingNetwork;
 import nl.tue.util.Util;
 
 public class Simulator {
 
 	public static String runSimulator(String filePath, long duration, long nrReplications, long warmup) throws BPMNParseException {
-		return Simulator.runSimulator(filePath, duration, nrReplications, warmup, null);
+		return Simulator.runSimulator(filePath, duration, nrReplications, warmup, false, null);
 	}
 	
-	public static String runSimulator(String filePath, long duration, long nrReplications, long warmup, ReplicationMonitor monitor) throws BPMNParseException {
+	public static String runSimulator(String filePath, long duration, long nrReplications, long warmup, boolean queueing, ReplicationMonitor monitor) throws BPMNParseException {
 		BPMNParser parser = new BPMNParser();
 		parser.parse(filePath);
 		BPMNModel model = parser.getParsedModel();
@@ -92,62 +93,77 @@ public class Simulator {
 			if (monitor != null){
 				monitor.setCurrentReplication(a);
 			}
-		}		
+		}
+		QueueingNetwork qn = null;
+		if (queueing) {
+			qn = new QueueingNetwork(model);
+		}
 
 		Double soj[] = Util.lowerMeanUpper(sojournTimes);
 		Double pro[] = Util.lowerMeanUpper(processingTimes);
 		Double wai[] = Util.lowerMeanUpper(waitingTimes);
 		result += "<h2>Process details</h2>";
-		result += tableHead(new String[]{"", "mean", "95% CI"});
-		result += tableRow(new String[]{"sojourn time", Util.round(soj[1],2).toString(), Util.round(soj[0],2) + "-" + Util.round(soj[2],2)}); 
-		result += tableRow(new String[]{"processing time", Util.round(pro[1],2).toString(), Util.round(pro[0],2) + "-" + Util.round(pro[2],2)}); 
-		result += tableRow(new String[]{"waiting time", Util.round(wai[1],2).toString(), Util.round(wai[0],2) + "-" + Util.round(wai[2],2)}); 
+		result += tableHead(new String[]{"", (qn==null)?null:"expected", "mean", "95% CI"});
+		result += tableRow(new String[]{"sojourn time", Util.round((qn==null)?null:qn.eS(),2).toString(), Util.round(soj[1],2).toString(), Util.round(soj[0],2) + "-" + Util.round(soj[2],2)}); 
+		result += tableRow(new String[]{"processing time", Util.round((qn==null)?null:qn.eB(),2).toString(), Util.round(pro[1],2).toString(), Util.round(pro[0],2) + "-" + Util.round(pro[2],2)}); 
+		result += tableRow(new String[]{"waiting time", Util.round((qn==null)?null:qn.eW(),2).toString(), Util.round(wai[1],2).toString(), Util.round(wai[0],2) + "-" + Util.round(wai[2],2)}); 
 		result += tableTail();
 		
-		result += overallTimeGraph(Util.round(wai[1],2),Util.round(pro[1],2));
+		result += pieChart(Util.round(wai[1],2),Util.round(pro[1],2));
 
 		result += "<h2>Activity details</h2>";
-		result += tableHead(new String[]{"activity", "mean processing time", "95% CI", "mean waiting time", "95% CI"});
+		
+		result += tableHead(new String[]{"activity", (qn==null)?null:"expected processing time", "mean processing time", "95% CI"});
 		String activityNames[] = new String[activityProcessingTimes.size()];
-		double values[] = new double[activityProcessingTimes.size()];
-		double errors[] = new double[activityProcessingTimes.size()];
+		double processingValues[] = new double[activityProcessingTimes.size()];
+		double processingErrors[] = new double[activityProcessingTimes.size()];
 		int activityIndex = 0;
 		for (Map.Entry<String, List<Double>> apt: activityProcessingTimes.entrySet()){
 			Double aPro[] = Util.lowerMeanUpper(apt.getValue());			
-			Double aWai[] = {0.0, 0.0, 0.0};
-			if (activityWaitingTimes.get(apt.getKey()) != null){
-				aWai = Util.lowerMeanUpper(activityWaitingTimes.get(apt.getKey()));
-			}
-			result += tableRow(new String[]{apt.getKey(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});
+			result += tableRow(new String[]{apt.getKey(), Util.round((qn==null)?null:qn.eB(apt.getKey()),2).toString(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2)});
 			activityNames[activityIndex] = apt.getKey();
-			values[activityIndex] = Util.round(aWai[1],2);
-			errors[activityIndex] = Util.round(aWai[1]-aWai[0],2);
+			processingValues[activityIndex] = Util.round(aPro[1],2);
+			processingErrors[activityIndex] = Util.round(aPro[1]-aPro[0],2);
 			activityIndex++;
 		}
 		result += tableTail();
-		result += waitingTimeGraph("waitingGraph", "waiting time", activityNames, values, errors);
+		result += barChart("processingGraph", "processing time", activityNames, processingValues, processingErrors);
+
+		result += tableHead(new String[]{"activity", (qn==null)?null:"expected waiting time", "mean waiting time", "95% CI"});
+		double waitingValues[] = new double[activityProcessingTimes.size()];
+		double waitingErrors[] = new double[activityProcessingTimes.size()];
+		activityIndex = 0;
+		for (Map.Entry<String, List<Double>> awa: activityWaitingTimes.entrySet()){
+			Double aWai[] = Util.lowerMeanUpper(awa.getValue());			
+			result += tableRow(new String[]{awa.getKey(), Util.round((qn==null)?null:qn.eW(awa.getKey()),2).toString(), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});
+			waitingValues[activityIndex] = Util.round(aWai[1],2);
+			waitingErrors[activityIndex] = Util.round(aWai[1]-aWai[0],2);
+			activityIndex++;
+		}
+		result += tableTail();
+		result += barChart("waitingGraph", "waiting time", activityNames, waitingValues, waitingErrors);
 
 		result += "<h2>Resource details</h2>";
-		result += tableHead(new String[]{"resource type", "mean utilization rate", "95% CI"});			
+		result += tableHead(new String[]{"resource type", (qn==null)?null:"expected utilization rate", "mean utilization rate", "95% CI"});			
 		String resourceNames[] = new String[resourceUtilizationRates.size()];
 		double rValues[] = new double[resourceUtilizationRates.size()];
 		double rErrors[] = new double[resourceUtilizationRates.size()];
 		int resourceIndex = 0;
 		for (Map.Entry<String, List<Double>> rur: resourceUtilizationRates.entrySet()){
 			Double uti[] = Util.lowerMeanUpper(rur.getValue());			
-			result += tableRow(new String[]{rur.getKey(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});
+			result += tableRow(new String[]{rur.getKey(), Util.round((qn==null)?null:qn.rho(rur.getKey()),2).toString(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});
 			resourceNames[resourceIndex] = rur.getKey();
 			rValues[resourceIndex] = Util.round(uti[1],2);
 			rErrors[resourceIndex] = Util.round(uti[1]-uti[0],2); 
 			resourceIndex++;
 		}
 		result += tableTail();
-		result += waitingTimeGraph("utilizationGraph", "utilization rate", resourceNames, rValues, rErrors);
+		result += barChart("utilizationGraph", "utilization rate", resourceNames, rValues, rErrors);
 		
 		return result + documentTail();
 	}
 	
-	private static String overallTimeGraph(double waitingTime, double processingTime){
+	private static String pieChart(double waitingTime, double processingTime){
 		String result = "";
 		result += "<div id=\"timegraph\" style=\"width: 600px; height: 300px;\"></div>";
 
@@ -170,7 +186,7 @@ public class Simulator {
 
 	}
 	
-	private static String waitingTimeGraph(String uniqueId, String yAxisLabel, String labels[], double values[], double errors[]) {
+	private static String barChart(String uniqueId, String yAxisLabel, String labels[], double values[], double errors[]) {
 		String result = "";
 		result += "<div id=\""+uniqueId+"\" style=\"width: 100%; height: 500px;\"></div>";
 

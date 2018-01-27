@@ -13,11 +13,11 @@ public class SimulatorWithProgressDialog implements ReplicationMonitor{
 	private ProgressMonitor progressMonitor;
 	private SimulatorScript callback;
 	
-	public SimulatorWithProgressDialog(String filePath, long duration, long nrReplications, long warmup, SimulatorScript callback){
+	public SimulatorWithProgressDialog(String filePath, long duration, long nrReplications, long warmup, boolean queueing, SimulatorScript callback){
 		progressMonitor = new ProgressMonitor(Environment.getMainController().getMainView(), "Running simulation", "", 0, (int) nrReplications);
 		this.callback = callback;
 		
-		BackgroundWorker backgrndWorker = new BackgroundWorker(filePath, duration, nrReplications, warmup, this);
+		BackgroundWorker backgrndWorker = new BackgroundWorker(filePath, duration, nrReplications, warmup, queueing, this);
 		backgrndWorker.execute();
 	}
 	
@@ -42,17 +42,19 @@ class BackgroundWorker extends SwingWorker<Void, Void> {
 	long duration;
 	long nrReplications;
 	long warmup;
+	boolean queueing;
 	SimulatorWithProgressDialog dialog;
 	
 	String result;
 	String exception;
 	
-	public BackgroundWorker(String filePath, long duration, long nrReplications, long warmup, SimulatorWithProgressDialog dialog) {
+	public BackgroundWorker(String filePath, long duration, long nrReplications, long warmup, boolean queueing, SimulatorWithProgressDialog dialog) {
 		this.filePath = filePath;
 		this.duration = duration;
 		this.nrReplications = nrReplications;
 		this.warmup = warmup;
 		this.dialog = dialog;
+		this.queueing = queueing;
 		
 		this.result = null;
 		this.exception = null;
@@ -61,7 +63,7 @@ class BackgroundWorker extends SwingWorker<Void, Void> {
 	@Override
 	protected Void doInBackground() throws Exception {
 		try {
-			this.result = Simulator.runSimulator(filePath, duration, nrReplications, warmup, dialog);
+			this.result = Simulator.runSimulator(filePath, duration, nrReplications, warmup, queueing, dialog);
 		} catch (BPMNParseException e) {
 			this.exception = "There was an error reading the BPMN file: " + e.getMessage();
 		}

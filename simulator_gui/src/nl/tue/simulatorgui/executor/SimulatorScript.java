@@ -46,7 +46,7 @@ public class SimulatorScript{
 	}
 	
 	public EvaluationResult execute() {
-		new SimulatorWithProgressDialog(fileToLoad, simulationLength, replications, warmup, this);
+		new SimulatorWithProgressDialog(fileToLoad, simulationLength, replications, warmup, queueing, this);
 		return new EvaluationResult("", ResultType.UNDEFINED);
 	}
 	
