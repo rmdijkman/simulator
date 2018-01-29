@@ -13,6 +13,8 @@ public class SandboxRunningExample {
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 		System.out.println(qn.eS());
+		System.out.println(qn.eB());
+		System.out.println(qn.eW());
 	}
 	
 }

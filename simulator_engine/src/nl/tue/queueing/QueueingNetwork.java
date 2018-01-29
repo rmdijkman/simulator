@@ -80,7 +80,7 @@ public class QueueingNetwork {
 		solve();
 	}
 	
-	private void solve() {
+	private void solve() throws BPMNParseException {
 		//Consider one queue per resource type/role, let role denote that queue and let tasks_role denote the tasks in each role
 		//Step 1. Calculate lambda_task for each task as follows:
 		//        let A, B, ... be tasks, let START be the start event, and let probability_(x,y) be the probability of transitioning from x to y.  
@@ -146,6 +146,9 @@ public class QueueingNetwork {
 			String role = rt.getName(); //Note that we can only do this, because we checked in the syntax constraints that roles = resourcetypes
 			double c = rt.getNumber();
 			double rho = QueueingFormulas.rho(lambdaRole.get(role), 1.0/eBRole.get(role), c);
+			if (rho >= 1.0) {
+				throw new BPMNParseException("Role '" + role + "' has a utilization rate " + rho + " greater than or equal to 1.0.");
+			}
 			rhoRole.put(role, rho);
 			eWRole.put(role, QueueingFormulas.EWMMc(eBRole.get(role), eB2Role.get(role), rho, c));			
 		}		
@@ -357,7 +360,7 @@ public class QueueingNetwork {
 			}
 		} else if (tree.isLoop) {
 			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
-			result += (1.0/(1.0 - child.probability) - 1.0) * executionTreeToEB(child);
+			result += (1.0/(1.0 - tree.probability) - 1.0) * executionTreeToEB(child);
 		} else {
 			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
 				ExecutionNode child = children.next();
