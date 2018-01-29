@@ -121,7 +121,7 @@ public class Simulator {
 		for (Map.Entry<String, List<Double>> apt: activityProcessingTimes.entrySet()){
 			Double aPro[] = Util.lowerMeanUpper(apt.getValue());			
 			result += tableRow(new String[]{apt.getKey(), Util.round((qn==null)?null:qn.eB(apt.getKey()),2).toString(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2)});
-			activityNames[activityIndex] = apt.getKey();
+			activityNames[activityIndex] = apt.getKey().replaceAll("[^a-zA-Z ]", "");
 			processingValues[activityIndex] = Util.round(aPro[1],2);
 			processingErrors[activityIndex] = Util.round(aPro[1]-aPro[0],2);
 			activityIndex++;
