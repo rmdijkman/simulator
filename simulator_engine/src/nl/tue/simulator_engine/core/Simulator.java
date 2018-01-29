@@ -130,8 +130,8 @@ public class Simulator {
 		result += barChart("processingGraph", "processing time", activityNames, processingValues, processingErrors);
 
 		result += tableHead(new String[]{"activity", (qn==null)?null:"expected waiting time", "mean waiting time", "95% CI"});
-		double waitingValues[] = new double[activityProcessingTimes.size()];
-		double waitingErrors[] = new double[activityProcessingTimes.size()];
+		double waitingValues[] = new double[activityWaitingTimes.size()];
+		double waitingErrors[] = new double[activityWaitingTimes.size()];
 		activityIndex = 0;
 		for (Map.Entry<String, List<Double>> awa: activityWaitingTimes.entrySet()){
 			Double aWai[] = Util.lowerMeanUpper(awa.getValue());			

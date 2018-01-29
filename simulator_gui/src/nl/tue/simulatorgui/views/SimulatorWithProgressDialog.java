@@ -1,9 +1,10 @@
 package nl.tue.simulatorgui.views;
 
+import java.util.concurrent.ExecutionException;
+
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
-import nl.tue.bpmn.parser.BPMNParseException;
 import nl.tue.simulator_engine.core.ReplicationMonitor;
 import nl.tue.simulator_engine.core.Simulator;
 import nl.tue.simulatorgui.core.Environment;
@@ -46,7 +47,6 @@ class BackgroundWorker extends SwingWorker<Void, Void> {
 	SimulatorWithProgressDialog dialog;
 	
 	String result;
-	String exception;
 	
 	public BackgroundWorker(String filePath, long duration, long nrReplications, long warmup, boolean queueing, SimulatorWithProgressDialog dialog) {
 		this.filePath = filePath;
@@ -57,26 +57,25 @@ class BackgroundWorker extends SwingWorker<Void, Void> {
 		this.queueing = queueing;
 		
 		this.result = null;
-		this.exception = null;
 	}
 
 	@Override
 	protected Void doInBackground() throws Exception {
-		try {
-			this.result = Simulator.runSimulator(filePath, duration, nrReplications, warmup, queueing, dialog);
-		} catch (BPMNParseException e) {
-			this.exception = "There was an error reading the BPMN file: " + e.getMessage();
-		}
+		this.result = Simulator.runSimulator(filePath, duration, nrReplications, warmup, queueing, dialog);
 		return null;
 	}
 
 	@Override
 	protected void done() {
-		if (result != null){
+		try {
+			get();
 			dialog.resultProduced(result);
-		}
-		if (exception != null){
+		} catch (ExecutionException e) {
+			String exception = "There was an error processing the simulation: " + e.getCause().getMessage();
+			e.printStackTrace();
 			dialog.exceptionProduced(exception);
+		} catch (InterruptedException e) {
+			
 		}
 	}
 

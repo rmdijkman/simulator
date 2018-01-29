@@ -12,6 +12,7 @@ public class SandboxRunningExample {
 		parser.parse("./resources/tests/queueing/Running Example.bpmn");
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
+		System.out.println(qn.eS());
 	}
 	
 }

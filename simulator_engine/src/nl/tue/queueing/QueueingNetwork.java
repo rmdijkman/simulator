@@ -32,6 +32,7 @@ public class QueueingNetwork {
 	private BPMNModel bpmnModel;
 	
 	private List<String> tasks;
+	private String startEvent;
 	private double lambda;
 	private Map<String,Double> eBTask; //the expected processing time of each task
 	private Map<String,Double> eB2Task; //the expected processing time of each task
@@ -73,7 +74,7 @@ public class QueueingNetwork {
 		createAdjacencyMatrix(bpmnModel);
 		
 		//Compute execution tree
-		executionTree = createExecutionTree(bpmnModel.nodeByName("START"), null, new ExecutionNode(null, false, false, 1.0));
+		executionTree = createExecutionTree(bpmnModel.nodeByName(startEvent), null, new ExecutionNode(null, false, false, 1.0));
 		
 		//Solve the queueing network
 		solve();
@@ -97,7 +98,7 @@ public class QueueingNetwork {
 			}
 			aArray[rowPos] = taskVector;
 			bArray[rowPos] = new double[1];
-			bArray[rowPos][0] = - probability("START", task) * lambda;
+			bArray[rowPos][0] = - probability(startEvent, task) * lambda;
 			rowPos++;
 		}
 		Matrix aMatrix = new Matrix(aArray);
@@ -226,6 +227,7 @@ public class QueueingNetwork {
 				eBTask.put(a.getName(), 1.0/ept);
 				eB2Task.put(a.getName(), 2.0/Math.pow(ept, 2.0));
 			}else if ((a.getType() == Type.Event) && (a.getIncoming().isEmpty())){
+				startEvent = a.getName();
 				Double iad = DistributionEvaluator.getLambda(a.getInterArrivalTimeDistribution());				
 				if (iad == null) {
 					throw new BPMNParseException("ERROR: currently only exponential distributions are allowed for interarrival times.");

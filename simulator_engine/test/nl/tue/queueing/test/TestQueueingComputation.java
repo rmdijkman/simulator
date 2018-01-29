@@ -1,4 +1,4 @@
-package nl.tue.queueing;
+package nl.tue.queueing.test;
 
 import static org.junit.Assert.*;
 
@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import nl.tue.bpmn.concepts.BPMNModel;
 import nl.tue.bpmn.parser.BPMNParser;
+import nl.tue.queueing.QueueingNetwork;
 
 public class TestQueueingComputation {
 
