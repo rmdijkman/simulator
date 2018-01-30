@@ -104,9 +104,9 @@ public class Simulator {
 		Double wai[] = Util.lowerMeanUpper(waitingTimes);
 		result += "<h2>Process details</h2>";
 		result += tableHead(new String[]{"", (qn==null)?null:"expected", "mean", "95% CI"});
-		result += tableRow(new String[]{"sojourn time", Util.round((qn==null)?null:qn.eS(),2).toString(), Util.round(soj[1],2).toString(), Util.round(soj[0],2) + "-" + Util.round(soj[2],2)}); 
-		result += tableRow(new String[]{"processing time", Util.round((qn==null)?null:qn.eB(),2).toString(), Util.round(pro[1],2).toString(), Util.round(pro[0],2) + "-" + Util.round(pro[2],2)}); 
-		result += tableRow(new String[]{"waiting time", Util.round((qn==null)?null:qn.eW(),2).toString(), Util.round(wai[1],2).toString(), Util.round(wai[0],2) + "-" + Util.round(wai[2],2)}); 
+		result += tableRow(new String[]{"sojourn time", (qn==null)?null:Util.round((qn==null)?null:qn.eS(),2).toString(), Util.round(soj[1],2).toString(), Util.round(soj[0],2) + "-" + Util.round(soj[2],2)}); 
+		result += tableRow(new String[]{"processing time", (qn==null)?null:Util.round((qn==null)?null:qn.eB(),2).toString(), Util.round(pro[1],2).toString(), Util.round(pro[0],2) + "-" + Util.round(pro[2],2)}); 
+		result += tableRow(new String[]{"waiting time", (qn==null)?null:Util.round((qn==null)?null:qn.eW(),2).toString(), Util.round(wai[1],2).toString(), Util.round(wai[0],2) + "-" + Util.round(wai[2],2)}); 
 		result += tableTail();
 		
 		result += pieChart(Util.round(wai[1],2),Util.round(pro[1],2));
@@ -120,7 +120,7 @@ public class Simulator {
 		int activityIndex = 0;
 		for (Map.Entry<String, List<Double>> apt: activityProcessingTimes.entrySet()){
 			Double aPro[] = Util.lowerMeanUpper(apt.getValue());			
-			result += tableRow(new String[]{apt.getKey(), Util.round((qn==null)?null:qn.eB(apt.getKey()),2).toString(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2)});
+			result += tableRow(new String[]{apt.getKey(), (qn==null)?null:Util.round(qn.eB(apt.getKey()),2).toString(), Util.round(aPro[1],2).toString(), Util.round(aPro[0],2) + "-" + Util.round(aPro[2],2)});
 			activityNames[activityIndex] = apt.getKey().replaceAll("[^a-zA-Z ]", "");
 			processingValues[activityIndex] = Util.round(aPro[1],2);
 			processingErrors[activityIndex] = Util.round(aPro[1]-aPro[0],2);
@@ -135,7 +135,7 @@ public class Simulator {
 		activityIndex = 0;
 		for (Map.Entry<String, List<Double>> awa: activityWaitingTimes.entrySet()){
 			Double aWai[] = Util.lowerMeanUpper(awa.getValue());			
-			result += tableRow(new String[]{awa.getKey(), Util.round((qn==null)?null:qn.eW(awa.getKey()),2).toString(), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});
+			result += tableRow(new String[]{awa.getKey(), (qn==null)?null:Util.round(qn.eW(awa.getKey()),2).toString(), Util.round(aWai[1],2).toString(), Util.round(aWai[0],2) + "-" + Util.round(aWai[2],2)});
 			waitingValues[activityIndex] = Util.round(aWai[1],2);
 			waitingErrors[activityIndex] = Util.round(aWai[1]-aWai[0],2);
 			activityIndex++;
@@ -151,7 +151,7 @@ public class Simulator {
 		int resourceIndex = 0;
 		for (Map.Entry<String, List<Double>> rur: resourceUtilizationRates.entrySet()){
 			Double uti[] = Util.lowerMeanUpper(rur.getValue());			
-			result += tableRow(new String[]{rur.getKey(), Util.round((qn==null)?null:qn.rho(rur.getKey()),2).toString(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});
+			result += tableRow(new String[]{rur.getKey(), (qn==null)?null:Util.round(qn.rho(rur.getKey()),2).toString(), Util.round(uti[1],2).toString(), Util.round(uti[0],2) + "-" + Util.round(uti[2],2)});
 			resourceNames[resourceIndex] = rur.getKey();
 			rValues[resourceIndex] = Util.round(uti[1],2);
 			rErrors[resourceIndex] = Util.round(uti[1]-uti[0],2); 
