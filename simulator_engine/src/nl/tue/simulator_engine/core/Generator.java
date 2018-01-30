@@ -13,6 +13,7 @@ public class Generator extends SimProcess{
 		model = (SimulatorModel) owner;
 	}
 	
+	@Override
 	public void lifeCycle(){
 		
 		while(true){

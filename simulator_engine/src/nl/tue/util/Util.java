@@ -8,7 +8,7 @@ import java.util.Random;
 public class Util {
 
 	public static Double round(Double v, int numDigits){
-		Double f = Math.pow(10.0, (double)numDigits);
+		Double f = Math.pow(10.0, numDigits);
 		return Math.round(v*f)/f;
 	}
 	
@@ -25,19 +25,19 @@ public class Util {
 	    for (double v: values) {
 	        sum += v;
 	    }
-	    double mean = sum/((double)values.size());
+	    double mean = sum/(values.size());
 
 	    //calculate standard deviation
 	    double squaredDifferenceSum = 0.0;
 	    for (double v: values) {
 	        squaredDifferenceSum += (v - mean) * (v - mean);
 	    }
-	    double variance = squaredDifferenceSum/((double)values.size());
+	    double variance = squaredDifferenceSum/(values.size());
 	    double standardDeviation = Math.sqrt(variance);
 
 	    //value for 95% confidence interval, source: https://en.wikipedia.org/wiki/Confidence_interval#Basic_Steps
 	    double confidenceLevel = 1.96;
-	    double temp = confidenceLevel * standardDeviation / Math.sqrt((double) values.size());
+	    double temp = confidenceLevel * standardDeviation / Math.sqrt(values.size());
 	    return new Double[]{mean - temp, mean, mean + temp};
 	}
 
@@ -47,7 +47,7 @@ public class Util {
 	    for (double v: values) {
 	        sum += v;
 	    }
-	    return sum/((double)values.size());
+	    return sum/(values.size());
 	}
 
 	public static Double variance(List<Double> values) {
@@ -56,14 +56,14 @@ public class Util {
 	    for (double v: values) {
 	        sum += v;
 	    }
-	    double mean = sum/((double)values.size());
+	    double mean = sum/(values.size());
 
 	    //calculate standard deviation
 	    double squaredDifferenceSum = 0.0;
 	    for (double v: values) {
 	        squaredDifferenceSum += (v - mean) * (v - mean);
 	    }
-	    return squaredDifferenceSum/((double)values.size());
+	    return squaredDifferenceSum/(values.size());
 	}
 
 	public static Double sd(List<Double> values) {

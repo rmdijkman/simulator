@@ -15,15 +15,18 @@ public class XMLErrorHandler implements ErrorHandler {
 		errors = new ArrayList<String>();
 	}
 	
-    public void warning(SAXParseException spe) throws SAXException {
+    @Override
+	public void warning(SAXParseException spe) throws SAXException {
         errors.add("Warning at line " + spe.getLineNumber() + " in BPMN file: " + spe.getMessage());
     }
         
-    public void error(SAXParseException spe) throws SAXException {
+    @Override
+	public void error(SAXParseException spe) throws SAXException {
         errors.add("Error at line " + spe.getLineNumber() + " in BPMN file: " + spe.getMessage());
     }
 
-    public void fatalError(SAXParseException spe) throws SAXException {
+    @Override
+	public void fatalError(SAXParseException spe) throws SAXException {
         errors.add("Error at line " + spe.getLineNumber() + " in BPMN file: " + spe.getMessage());
     }
     
