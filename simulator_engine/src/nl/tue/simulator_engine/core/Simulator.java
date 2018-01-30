@@ -253,7 +253,9 @@ public class Simulator {
 				+ "<thead>"
 				+ "<tr>";
 		for (String columnName: columnNames){
-			result += "<th>" + columnName + "</th>";
+			if (columnName != null) {
+				result += "<th>" + columnName + "</th>";
+			}
 		}
 		result += "</tr>"
 				+ "</thead>"
@@ -264,7 +266,9 @@ public class Simulator {
 	public static String tableRow(String[] cellValues){
 		String result = "<tr>";
 		for (String cellValue: cellValues){
-			result += "<td>" + cellValue + "</td>";
+			if (cellValue != null) {
+				result += "<td>" + cellValue + "</td>";
+			}
 		}
 		result += "</tr>";
 		return result;
