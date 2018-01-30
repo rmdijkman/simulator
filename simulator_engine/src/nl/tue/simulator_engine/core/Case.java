@@ -1,9 +1,7 @@
 package nl.tue.simulator_engine.core;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,6 +36,7 @@ public class Case extends SimProcess{
 		model = simmodel.getBBPMNModel();
 	}
 	
+	@Override
 	public void lifeCycle(){
 		startTime = simmodel.presentTime().getTimeAsDouble();
 		totalProcessingTime = 0;

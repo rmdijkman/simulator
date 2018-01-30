@@ -342,7 +342,7 @@ public class SimulatorModel extends Model{
 		for (double v: sojournTimes){
 			result += v;
 		}
-		return result/(double)sojournTimes.size();
+		return result/sojournTimes.size();
 	}
 
 	public double meanProcessingTime(){
@@ -350,7 +350,7 @@ public class SimulatorModel extends Model{
 		for (double v: processingTimes){
 			result += v;
 		}
-		return result/(double)processingTimes.size();
+		return result/processingTimes.size();
 	}
 	
 	public Map<String,Double> meanActivityProcessingTimes(){

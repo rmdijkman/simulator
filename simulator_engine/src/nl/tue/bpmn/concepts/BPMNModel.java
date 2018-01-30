@@ -64,6 +64,7 @@ public class BPMNModel {
 		resourceTypes.add(resourceType);
 	}
 
+	@Override
 	public String toString(){
 		String result = "";
 		for (Role role: roles){
