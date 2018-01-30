@@ -9,12 +9,13 @@ public class SandboxRunningExample {
 
 	public static void main(String args[]) throws BPMNParseException {
 		BPMNParser parser = new BPMNParser();
-		parser.parse("./resources/tests/queueing/Running Example.bpmn");
+		parser.parse("./resources/tests/queueing/Running Example Simple.bpmn");
 		BPMNModel model = parser.getParsedModel();
 		QueueingNetwork qn = new QueueingNetwork(model);
 		System.out.println(qn.eS());
 		System.out.println(qn.eB());
 		System.out.println(qn.eW());
+		System.out.println(qn.executionPathsToString());
 	}
 	
 }

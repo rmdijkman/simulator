@@ -162,7 +162,7 @@ public class QueueingNetwork {
 		//        E(W) and E(B) can be calculated analogously
 		eS = executionTreeToES(executionTree);
 		eB = executionTreeToEB(executionTree);
-		eW = eS - eB;
+		eW = executionTreeToEW(executionTree);
 	}
 	
 	public double rho(String role) {
@@ -295,9 +295,9 @@ public class QueueingNetwork {
 		List<Arc> nonLoops = new ArrayList<Arc>();
 		for (Arc outgoing: fromNode.getOutgoing()) {
 			if (startsLoop(outgoing)) {
-				ExecutionNode loop = new ExecutionNode(fromNode, true, false, transitionProbability(outgoing));
-				subTree.children.add(loop);
-				createExecutionTree(outgoing.getTarget(), fromNode, loop);
+				ExecutionNode loopSubTree = new ExecutionNode(fromNode, true, false, transitionProbability(outgoing));
+				subTree.children.add(loopSubTree);
+				loopSubTree.children.add(createExecutionTree(outgoing.getTarget(), fromNode, new ExecutionNode(null, false, false, 1.0)));
 			} else {
 				nonLoops.add(outgoing);
 			}
@@ -306,16 +306,16 @@ public class QueueingNetwork {
 		//Recurse for all non-loop children
 		//If it is a choice
 		if (nonLoops.size() > 1) {
-			ExecutionNode newSubTree = new ExecutionNode(fromNode, false, true, 1.0);
-			subTree.children.add(newSubTree);
+			ExecutionNode choiceSubTree = new ExecutionNode(fromNode, false, true, 1.0);
+			subTree.children.add(choiceSubTree);
 			for (Arc outgoing: nonLoops) {
 				//TODO This must be changed for the situation of a choice/loop start that have the same XOR-split as a starting point. 
 				//In that case, the probabilities of the choice part must be normalized: let 'a' be the loop path and 'b','c' be the choice paths, 
 				//then probability 'b' must be normalized as probability 'b'/(probability 'b' + probability 'c')
 				//TODO It is even better to refactor this into using a RPST
-				newSubTree.children.add(createExecutionTree(outgoing.getTarget(), toNode, new ExecutionNode(null, false, false, transitionProbability(outgoing))));
+				choiceSubTree.children.add(createExecutionTree(outgoing.getTarget(), toNode, new ExecutionNode(null, false, false, transitionProbability(outgoing))));
 			}
-			return newSubTree;
+			return choiceSubTree;
 		}else {
 			//If it is not a choice
 			for (Arc outgoing: nonLoops) {
@@ -338,11 +338,33 @@ public class QueueingNetwork {
 			}
 		} else if (tree.isLoop) {
 			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
-			result += (1.0/(1.0 - tree.probability) - 1.0) * executionTreeToES(child);
+			result += (tree.probability/(1.0 - tree.probability)) * executionTreeToES(child);
 		} else {
 			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
 				ExecutionNode child = children.next();
 				result += executionTreeToES(child);
+			}			
+		}
+		return result;
+	}
+
+	private double executionTreeToEW(ExecutionNode tree) {		
+		double result = 0.0;
+		if ((tree.node != null) && (tree.node.getType() == Type.Task)){
+			result += eWRole.get(task2Role.get(tree.node.getName()));
+		}
+		if (tree.isChoice) {
+			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+				ExecutionNode child = children.next();
+				result += child.probability * executionTreeToEW(child);
+			}
+		} else if (tree.isLoop) {
+			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
+			result += (tree.probability/(1.0 - tree.probability)) * executionTreeToEW(child);
+		} else {
+			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
+				ExecutionNode child = children.next();
+				result += executionTreeToEW(child);
 			}			
 		}
 		return result;
@@ -360,7 +382,7 @@ public class QueueingNetwork {
 			}
 		} else if (tree.isLoop) {
 			ExecutionNode child = tree.children.iterator().next(); //By construction there is one child
-			result += (1.0/(1.0 - tree.probability) - 1.0) * executionTreeToEB(child);
+			result += (tree.probability/(1.0 - tree.probability)) * executionTreeToEB(child);
 		} else {
 			for (Iterator<ExecutionNode> children = tree.children.iterator(); children.hasNext(); ) {
 				ExecutionNode child = children.next();
