@@ -1,6 +1,9 @@
 package nl.tue.simulator_engine.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
@@ -36,8 +39,9 @@ public class Resource extends SimProcess {
 	public void lifeCycle() {
 		ProcessQueue<Resource> myQueue = simmodel.queueForResourceType(myType.getName());
 		while (true) {
-			//Random(myQueue);
-			MostTardy(myQueue);
+			Random(myQueue);
+			//RoundRobin(myQueue);
+			//MostTardy(myQueue);
 		}
 	}
 
@@ -52,10 +56,19 @@ public class Resource extends SimProcess {
 		simmodel.addActivityProcessingTime(n.getName(), activityStartTime, activityCompletionTime);
 		simmodel.addResourceTypeProcessingTime(myType.getName(), activityStartTime, activityCompletionTime);
 		previousCompletionTime = activityCompletionTime;
-		for (Arc i : n.getIncoming()) {
+		BPMNModel cmodel = ac.model;
+		Set<Node> nds = cmodel.getNodes();
+		Node nd = null;
+		for (Node ni: nds) {
+			if(n.getName().equals(ni.getName())) {
+				nd = ni;
+				break;
+			}
+		}
+		for (Arc i : nd.getIncoming()) {
 			i.setEnable(false);
 		}
-		for (Arc o : n.getOutgoing()) {
+		for (Arc o : nd.getOutgoing()) {
 			o.setEnable(true);
 		}
 		ac.setHistory(n, this);
@@ -185,6 +198,169 @@ public class Resource extends SimProcess {
 								if (nmax < cmax) {
 									mtn = nd;
 									cmax = nmax;
+								}
+							}
+						}
+					}
+				}
+				if(mtn != null) {
+					ProcessQueue<Case> pq = simmodel.queueForActivity(mtn.getName());
+					ResourceAllocation(mtn, pq);
+					doneSomething = true;	
+				}
+			}
+	
+			if (doneSomething) {
+				break;
+			}
+
+		}
+
+		if (!doneSomething) {
+			myQueue.insert(this);
+			passivate();
+		}
+	}
+	
+	public void RoundRobin(ProcessQueue<Resource> myQueue) {
+		boolean doneSomething = false;
+		for (Role r : myType.getRoles()) {
+			Node[] arrnode = r.getContainedNodes().toArray(new Node[r.getContainedNodes().size()]);
+			ArrayList<String> listtask = new ArrayList<String>();
+			int cnt = 0;
+			for(int l = 0; l < arrnode.length; l++) {
+				if(arrnode[l].getType() == Type.Task) {
+					listtask.add(arrnode[l].getName());
+					cnt++;
+				}
+			}
+			Collections.sort(listtask);
+			Node [] tasks = new Node[cnt];
+			for(int k = 0; k < listtask.size(); k++) {
+				for(int w = 0; w < arrnode.length; w++) {
+					if(arrnode[w].getName().equals(listtask.get(k))) {
+						Node x = arrnode[w];
+						tasks[k] = x;
+					}
+				}
+			}
+			//System.out.println("Test: " + Arrays.toString(tasks));
+			for (int j = 0; j < tasks.length; j++) {
+				Node n = tasks[j];
+				if (n.getType() == Type.Task) {
+					ProcessQueue<Case> pc = simmodel.queueForActivity(n.getName());
+					if (!pc.isEmpty()) {
+						Case c = pc.first();
+						if (n.getResourceDependency() != null && !(n.getResourceDependency().equals("NONE"))) {
+							for (Node d : n.getActivityDependency()) {
+								if (n.getResourceDependency().equals("CASE")) {
+									if (!(c.getResourceOfNode(d) == null)) {
+										if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d)))) {
+											ResourceAllocation(n, pc);
+											doneSomething = true;
+											break;
+										}
+									} else {
+										ResourceAllocation(n, pc);
+										doneSomething = true;
+										break;
+
+									}
+								} else if (n.getResourceDependency().equals("SOFD")) {
+									if (!(c.getResourceOfNode(d) == null)) {
+										if (!(d.equals(n)) && (!(this.equals(c.getResourceOfNode(d))))) {
+											ResourceAllocation(n, pc);
+											doneSomething = true;
+											break;
+										}
+									} else {
+										ResourceAllocation(n, pc);
+										doneSomething = true;
+										break;
+									}
+								}
+							}
+						} else if (n.getResourceDependency() == null || (n.getResourceDependency().equals("NONE"))) {
+							// If there is no resource dependency process
+							// the case is processed
+							ResourceAllocation(n, pc);
+							doneSomething = true;
+						}
+					}
+				}
+			}
+			if (doneSomething) {
+				break;
+			}
+		}
+		if (!doneSomething) {
+			myQueue.insert(this);
+			passivate();
+		}
+	}
+	
+	public void LongestQueue(ProcessQueue<Resource> myQueue) {
+		boolean doneSomething = false;
+		for (Role r : myType.getRoles()) {
+			// Check for each node if it is allowed to process it
+			Node[] arrnode = r.getContainedNodes().toArray(new Node[r.getContainedNodes().size()]);
+			// Create arrnode of those nodes and iterate over these nodes to find the longest queue
+			ArrayList<Node> alwnode = new ArrayList<Node>();
+			for (int k = 0; k < arrnode.length; k++) {
+				Node n = arrnode[k];
+				if (n.getType() == Type.Task) {
+					ProcessQueue<Case> pc = simmodel.queueForActivity(n.getName());
+					if (!pc.isEmpty()) {
+						Case c = pc.first();
+						if (n.getResourceDependency() != null && !(n.getResourceDependency().equals("NONE"))) {
+							for (Node d : n.getActivityDependency()) {
+								if (n.getResourceDependency().equals("CASE")) {
+									if (!(c.getResourceOfNode(d) == null)) {
+										if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d)))) {
+											alwnode.add(n);
+											break;
+										}
+									} else {
+										alwnode.add(n);
+										break;
+
+									}
+								} else if (n.getResourceDependency().equals("SOFD")) {
+									if (!(c.getResourceOfNode(d) == null)) {
+										if (!(d.equals(n)) && (!(this.equals(c.getResourceOfNode(d))))) {
+											alwnode.add(n);
+											break;
+										}
+									} else {
+										alwnode.add(n);
+										break;
+									}
+								}
+							}
+						} else if (n.getResourceDependency() == null || (n.getResourceDependency().equals("NONE"))) {
+							// If there is no resource dependency process
+							// the case is processed
+							alwnode.add(n);
+						}
+					}
+				}
+			}
+
+			Node mtn = null;
+			if (alwnode != null) {
+				double qmax = 0.0;
+				for (Node nd : alwnode) {
+					if (nd.getType() == Type.Task) {
+						ProcessQueue<Case> pqc = simmodel.queueForActivity(nd.getName());
+						if (!pqc.isEmpty()) {
+							if (mtn == null) {
+								mtn = nd;
+								qmax = pqc.length();
+							} else {
+								double nmax = pqc.length();
+								if (nmax < qmax) {
+									mtn = nd;
+									qmax = nmax;
 								}
 							}
 						}

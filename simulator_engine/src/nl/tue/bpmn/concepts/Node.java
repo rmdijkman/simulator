@@ -3,7 +3,7 @@ package nl.tue.bpmn.concepts;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Node {
+public class Node{
 	
 	String name;
 	String processingTimeDitribution;
