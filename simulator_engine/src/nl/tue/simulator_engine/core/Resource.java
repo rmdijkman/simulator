@@ -25,7 +25,7 @@ public class Resource extends SimProcess {
 	BPMNModel model;
 	SimulatorModel simmodel;
 	double previousCompletionTime;
-
+	
 	public Resource(Model owner, String name, boolean showInTrace, ResourceType type) {
 		super(owner, name, showInTrace);
 		myIdentifier = identifier++;
@@ -66,10 +66,10 @@ public class Resource extends SimProcess {
 			}
 		}
 		for (Arc i : nd.getIncoming()) {
-			i.setEnable(false);
+			ac.enabled.remove(i);
 		}
 		for (Arc o : nd.getOutgoing()) {
-			o.setEnable(true);
+			ac.enabled.add(o);
 		}
 		ac.setHistory(n, this);
 		ac.activate();

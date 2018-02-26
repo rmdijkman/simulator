@@ -24,6 +24,7 @@ public class Case extends SimProcess{
 	BPMNModel model;
 	SimulatorModel simmodel;
 	Map<Node, Resource> history;
+	Set<Arc> enabled;
 	
 	double startTime;
 	double totalProcessingTime;
@@ -34,6 +35,7 @@ public class Case extends SimProcess{
 		myIdentifier = identifier++;
 		history = new HashMap<Node,Resource>();
 		model = simmodel.getBBPMNModel();
+		enabled = new HashSet<Arc>();
 	}
 	
 	@Override
@@ -52,7 +54,7 @@ public class Case extends SimProcess{
 		for(Node n: model.getNodes()){
 			if(n.getType() == Type.Event && n.getIncoming().size() == 0){
 				for(Arc s: n.getOutgoing()){
-					s.setEnable(true);
+					enabled.add(s);
 				}
 			}
 		}
@@ -69,12 +71,10 @@ public class Case extends SimProcess{
 			for (Node n : model.getNodes()) {
 				if (n.getType() == Type.Event && n.getOutgoing().size() == 0) {
 					for (Arc e : n.getIncoming()) {
-						if (e.getEnable() != null) {
-							end = e.getEnable();
-						}
+						end = enabled.contains(e);
 					}
 				}
-			}
+			}			
 			
 			/*
 			 * Check all gateways if they are enabled. If a gateway is enabled
@@ -92,10 +92,9 @@ public class Case extends SimProcess{
 						boolean s_enbl = false;	//single enabled
 						boolean a_enbl = true;	//all enabled
 						for(Arc i : n.getIncoming()){
-							if(i.getEnable() && !s_enbl){
+							if(enabled.contains(i)){
 								s_enbl = true;
-							}
-							if(!i.getEnable() && a_enbl){
+							} else {
 								a_enbl = false;
 							}
 						}
@@ -106,16 +105,6 @@ public class Case extends SimProcess{
 							enable_all(n);
 							gtw = true;
 						}else if(n.getTypeGtw() == TypeGtw.XSplit && s_enbl){
-							for(Arc x : n.getOutgoing()){
-								if(ce.evaluate(x.getCondition())){
-									for(Arc i: n.getIncoming()){
-										i.setEnable(false);
-									}
-									x.setEnable(true);
-									gtw = true;
-									break;
-								}
-							}
 							//In case the outgoing arcs specify percentages rather than conditions
 							boolean percentages = true;
 							for (Arc a: n.getOutgoing()) {								
@@ -123,7 +112,18 @@ public class Case extends SimProcess{
 									percentages = false;
 								}
 							}
-							if (percentages) {
+							if (!percentages) {
+								for(Arc x : n.getOutgoing()){
+									if(ce.evaluate(x.getCondition())){
+										for(Arc i: n.getIncoming()){
+											enabled.remove(i);
+										}
+										enabled.add(x);
+										gtw = true;
+										break;
+									}
+								}
+							} else {
 								Double randomNumber = RandomGenerator.generateUniform(100);
 								Double sum = 0.0;
 								Arc enabledArc = null;
@@ -137,10 +137,10 @@ public class Case extends SimProcess{
 								}
 								if (enabledArc != null) {
 									for(Arc i: n.getIncoming()){
-										i.setEnable(false);
+										enabled.remove(i);
 									}
-									enabledArc.setEnable(true);
-									gtw = true;									
+									enabled.add(enabledArc);
+									gtw = true;							
 								}
 							}
 						}
@@ -156,17 +156,14 @@ public class Case extends SimProcess{
 			for(Node t : model.getNodes()){
 				if (t.getType() == Type.Task) {
 					for (Arc i : t.getIncoming()) {
-						if (i.getEnable() != null) {
-							if (i.getEnable()) {
-								set_res(t);
-								break;
-							}
+						if (enabled.contains(i)) {
+							set_res(t);
+							break;
 						}
 					}
 				}
 			}
-		}
-		
+		}		
 		simmodel.addSojournTime(startTime, simmodel.presentTime().getTimeAsDouble());
 		simmodel.addProcessingTime(startTime, totalProcessingTime);
 	}
@@ -178,10 +175,10 @@ public class Case extends SimProcess{
 	
 	public void enable_all(Node n){
 		for(Arc a : n.getIncoming()){
-			a.setEnable(false);
+			enabled.remove(a);
 		}
 		for(Arc a : n.getOutgoing()){
-			a.setEnable(true);
+			enabled.add(a);
 		}
 	}
 	
@@ -195,7 +192,7 @@ public class Case extends SimProcess{
 		q.insert(this);
 		//Disable all incoming arcs in the task
 		for(Arc a : n.getIncoming()){
-			a.setEnable(false);
+			enabled.remove(a);
 		}
 		//Obtain the role for the node n
 		Role rs = null;
