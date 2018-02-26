@@ -2,6 +2,7 @@ package nl.tue.simulatorgui.views;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.beans.PropertyVetoException;
 
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameAdapter;
@@ -25,7 +26,7 @@ public class BrowserView extends JInternalFrame{
     private WebEngine engine;
 	
     public BrowserView(BrowserController controller){
-		super("View", true, true, false, false);
+		super("View", true, true, true, false);
 		setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
 		this.addInternalFrameListener(new InternalFrameAdapter(){
 			public void internalFrameClosing(InternalFrameEvent e){
@@ -51,10 +52,13 @@ public class BrowserView extends JInternalFrame{
         Platform.runLater(new Runnable() {
             @Override 
             public void run() {
+        		try {
+        			setMaximum(true);
+        		} catch (PropertyVetoException e) {}
                 WebView view = new WebView();
                 engine = view.getEngine();
                 jfxPanel.setScene(new Scene(view));
-            	engine.loadContent(content);            	
+            	engine.loadContent(content);
             }
         });
 	}		
