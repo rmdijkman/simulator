@@ -13,6 +13,10 @@ The binary of the simulator is downloadable from [the build folder in the simula
 
 The program should be self-explanatory. Several test models are provided as part of the simulator_engine project. A comprehensive test model, for example, is the [BPMN Example Model](https://raw.githubusercontent.com/rmdijkman/simulator/master/simulator_engine/resources/tests/Example%20Process%20BPMN.bpmn). The models are made in [Signavio](https://www.signavio.com/) and can be imported there for viewing. Arrival distributions, processing time distributions, resources, etc. can be specified as part of the documentation of tasks and pools in the BPMN model. The syntax for doing this is explained below.
 
+# Queueing Model
+
+The simulator also supports analytic calculations of processing times, waiting times, sojourn times, and resource utilization. This only works for models with certain restrictions. Currently, the analytic calculation does not support case variables, task dependencies, and parallel constructs. Parallel constructs will be added in future work. A model for which the analytic calculation will work is the [BPMN Queueing Example Model](https://raw.githubusercontent.com/rmdijkman/simulator/master/simulator_engine/resources/tests/queueing/Running%20Example%20Simple.bpmn).
+
 # Syntax
 
 The BPMN Models need to be enhanced in order to make them suitable for simulation. In order to do so the documentation section of many elements will be used to specify properties of the model in order to build the simulation model. On the pool level of a process the following need to be specified:
