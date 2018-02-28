@@ -39,9 +39,10 @@ public class Resource extends SimProcess {
 	public void lifeCycle() {
 		ProcessQueue<Resource> myQueue = simmodel.queueForResourceType(myType.getName());
 		while (true) {
-			Random(myQueue);
-			//RoundRobin(myQueue);
+			//Random(myQueue);
+			RoundRobin(myQueue);
 			//MostTardy(myQueue);
+			//LongestQueue(myQueue);
 		}
 	}
 
@@ -80,6 +81,7 @@ public class Resource extends SimProcess {
 		for (Role r : myType.getRoles()) {
 			Node[] arrnode = r.getContainedNodes().toArray(new Node[r.getContainedNodes().size()]);
 			Integer[] rand = Util.randomOrder(r.getContainedNodes().size());
+			nodeloop:
 			for (int j = 0; j < rand.length; j++) {
 				int random = rand[j];
 				Node n = arrnode[random];
@@ -94,12 +96,12 @@ public class Resource extends SimProcess {
 										if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d)))) {
 											ResourceAllocation(n, pc);
 											doneSomething = true;
-											break;
+											break nodeloop;
 										}
 									} else {
 										ResourceAllocation(n, pc);
 										doneSomething = true;
-										break;
+										break nodeloop;
 
 									}
 								} else if (n.getResourceDependency().equals("SOFD")) {
@@ -107,12 +109,12 @@ public class Resource extends SimProcess {
 										if (!(d.equals(n)) && (!(this.equals(c.getResourceOfNode(d))))) {
 											ResourceAllocation(n, pc);
 											doneSomething = true;
-											break;
+											break nodeloop;
 										}
 									} else {
 										ResourceAllocation(n, pc);
 										doneSomething = true;
-										break;
+										break nodeloop;
 									}
 								}
 							}
@@ -121,6 +123,7 @@ public class Resource extends SimProcess {
 							// the case is processed
 							ResourceAllocation(n, pc);
 							doneSomething = true;
+							break nodeloop;
 						}
 					}
 				}
@@ -160,7 +163,6 @@ public class Resource extends SimProcess {
 									} else {
 										alwnode.add(n);
 										break;
-
 									}
 								} else if (n.getResourceDependency().equals("SOFD")) {
 									if (!(c.getResourceOfNode(d) == null)) {
@@ -245,8 +247,10 @@ public class Resource extends SimProcess {
 				}
 			}
 			//System.out.println("Test: " + Arrays.toString(tasks));
+			nodeloop:
 			for (int j = 0; j < tasks.length; j++) {
 				Node n = tasks[j];
+				//System.out.println(n.getName());
 				if (n.getType() == Type.Task) {
 					ProcessQueue<Case> pc = simmodel.queueForActivity(n.getName());
 					if (!pc.isEmpty()) {
@@ -258,12 +262,12 @@ public class Resource extends SimProcess {
 										if (!(d.equals(n)) && (this.equals(c.getResourceOfNode(d)))) {
 											ResourceAllocation(n, pc);
 											doneSomething = true;
-											break;
+											break nodeloop;
 										}
 									} else {
 										ResourceAllocation(n, pc);
 										doneSomething = true;
-										break;
+										break nodeloop;
 
 									}
 								} else if (n.getResourceDependency().equals("SOFD")) {
@@ -271,12 +275,12 @@ public class Resource extends SimProcess {
 										if (!(d.equals(n)) && (!(this.equals(c.getResourceOfNode(d))))) {
 											ResourceAllocation(n, pc);
 											doneSomething = true;
-											break;
+											break nodeloop;
 										}
 									} else {
 										ResourceAllocation(n, pc);
 										doneSomething = true;
-										break;
+										break nodeloop;
 									}
 								}
 							}
@@ -285,6 +289,7 @@ public class Resource extends SimProcess {
 							// the case is processed
 							ResourceAllocation(n, pc);
 							doneSomething = true;
+							break nodeloop;
 						}
 					}
 				}
